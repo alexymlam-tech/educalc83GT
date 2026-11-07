@@ -1,0 +1,3233 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CalcX CW · 在線科學計算器 | fx-83GT CW Educational Simulator</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=STIX+Two+Math&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lcd-bg: #d9e4d4;
+      --lcd-ink: #121c15;
+      --lcd-muted: #4b5e50;
+      --lcd-grid: rgba(18, 28, 21, 0.045);
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 15% 15%, #1e293b 0%, #0f172a 55%, #090d16 100%);
+      color: #f1f5f9;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    .mono-font { font-family: 'JetBrains Mono', monospace; }
+    .math-font { font-family: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif; }
+
+    /* CW Rounded-Convex Matte Chassis */
+    .cw-chassis {
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,255,255,0.06), transparent 60%),
+        linear-gradient(165deg, #242933 0%, #191d25 65%, #12151b 100%);
+      border-radius: 34px;
+      box-shadow:
+        0 28px 55px -12px rgba(0, 0, 0, 0.82),
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.16),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.7);
+      border: 1.5px solid #334155;
+      transition: all 0.25s ease;
+    }
+    .cw-chassis.theme-light {
+      background: linear-gradient(165deg, #f1f5f9 0%, #e2e8f0 65%, #cbd5e1 100%);
+      border-color: #cbd5e1;
+      box-shadow:
+        0 25px 50px -12px rgba(15, 23, 42, 0.35),
+        inset 0 2px 3px rgba(255, 255, 255, 0.9),
+        inset 0 -4px 8px rgba(15, 23, 42, 0.18);
+    }
+    .cw-chassis.theme-blue {
+      background: linear-gradient(165deg, #1e3a8a 0%, #172554 65%, #0f172a 100%);
+      border-color: #3b82f6;
+    }
+
+    /* High-Definition 4-Gradation Grayscale Dot-Matrix LCD */
+    .lcd-bezel {
+      background: linear-gradient(180deg, #0c1017 0%, #161c27 100%);
+      border-radius: 18px;
+      padding: 10px;
+      box-shadow: inset 0 3px 8px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.08);
+    }
+    .lcd-screen {
+      background-color: var(--lcd-bg);
+      background-image:
+        linear-gradient(to right, var(--lcd-grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--lcd-grid) 1px, transparent 1px);
+      background-size: 2.5px 2.5px;
+      color: var(--lcd-ink);
+      border-radius: 11px;
+      box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.24);
+      position: relative;
+      overflow: hidden;
+      transition: filter 0.15s ease;
+    }
+
+    /* CW Convex Keys */
+    .cw-key {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.06s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      box-shadow:
+        0 3px 0 rgba(0,0,0,0.65),
+        0 4px 6px rgba(0,0,0,0.35),
+        inset 0 1.5px 1px rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .cw-key:active, .cw-key.key-active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.6), inset 0 1px 2px rgba(0,0,0,0.35);
+    }
+    .cw-key.highlight-target {
+      outline: 2.5px solid #38bdf8;
+      outline-offset: 2px;
+      animation: pulse-cw 1.1s infinite;
+    }
+    @keyframes pulse-cw {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.75), 0 3px 0 rgba(0,0,0,0.6); }
+      50% { box-shadow: 0 0 0 6px rgba(56, 189, 248, 0), 0 3px 0 rgba(0,0,0,0.6); }
+    }
+
+    .key-nav-pill {
+      background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
+      color: #f3f4f6;
+      height: 27px;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      letter-spacing: 0.01em;
+    }
+    .key-fn-cw {
+      background: linear-gradient(180deg, #2e3646 0%, #1f2531 100%);
+      color: #f8fafc;
+      height: 30px;
+      font-size: 0.76rem;
+      border-radius: 9px;
+    }
+    .key-num-cw {
+      background: linear-gradient(180deg, #3f4859 0%, #2a313f 100%);
+      color: #ffffff;
+      height: 36px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      border-radius: 11px;
+    }
+    .key-del-ac {
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      height: 36px;
+      font-size: 0.86rem;
+      font-weight: 800;
+      border-radius: 11px;
+      box-shadow: 0 3px 0 #0c4a6e, 0 4px 6px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.35);
+    }
+    .key-exe-cw {
+      background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+      color: #0f172a;
+      height: 36px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      border-radius: 11px;
+      box-shadow: 0 3px 0 #78350f, 0 4px 6px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.45);
+    }
+
+    .sub-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+      padding: 0 2px;
+      min-height: 13px;
+      line-height: 1;
+      font-size: 0.59rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .lbl-shift { color: #facc15; }
+    .lbl-var { color: #38bdf8; }
+    .cw-chassis.theme-light .lbl-shift { color: #b45309; }
+    .cw-chassis.theme-light .lbl-var { color: #0369a1; }
+
+    /* Natural Textbook 2D Math Nodes */
+    .m-expr { display: inline-flex; align-items: center; vertical-align: middle; white-space: nowrap; }
+    .m-frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 2px; font-size: 0.88em; }
+    .m-frac-num { padding: 0 3px 1px 3px; border-bottom: 1.5px solid currentColor; min-width: 14px; text-align: center; display: inline-flex; align-items: center; justify-content: center; }
+    .m-frac-den { padding: 1px 3px 0 3px; min-width: 14px; text-align: center; display: inline-flex; align-items: center; justify-content: center; }
+    .m-mixed { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 2px; }
+    .m-sqrt { display: inline-flex; align-items: stretch; vertical-align: middle; margin: 0 2px; }
+    .m-sqrt-sym { font-size: 1.15em; line-height: 1; display: flex; align-items: center; padding-right: 1px; }
+    .m-sqrt-body { border-top: 1.5px solid currentColor; padding: 1px 3px 0 2px; display: inline-flex; align-items: center; }
+    .m-nthroot { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 2px; }
+    .m-nthroot-idx { font-size: 0.68em; transform: translateY(-0.45em); margin-right: -2px; min-width: 8px; text-align: right; }
+    .m-sup { display: inline-flex; align-items: center; font-size: 0.72em; transform: translateY(-0.48em); margin-left: 1px; }
+    .m-sub { display: inline-flex; align-items: center; font-size: 0.72em; transform: translateY(0.32em); margin-left: 1px; margin-right: 1px; }
+    .m-abs { display: inline-flex; align-items: stretch; vertical-align: middle; border-left: 1.5px solid currentColor; border-right: 1.5px solid currentColor; padding: 0 3px; margin: 0 2px; }
+    .m-rec { display: inline-flex; align-items: center; border-top: 1.5px dotted currentColor; padding-top: 1px; }
+    .m-box { display: inline-block; width: 9px; height: 12px; border: 1.3px solid currentColor; margin: 0 1px; vertical-align: middle; opacity: 0.55; }
+    .m-box.active-box { background: currentColor; opacity: 0.9; }
+    .m-cursor { display: inline-block; width: 2px; height: 1.15em; background-color: var(--lcd-ink); vertical-align: middle; margin: 0 0.5px; animation: blink-caret 0.9s steps(1) infinite; }
+    @keyframes blink-caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    .overdot { position: relative; display: inline-block; }
+    .overdot::after { content: '•'; position: absolute; top: -0.6em; left: 50%; transform: translateX(-50%); font-size: 0.65em; line-height: 1; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  </style>
+</head>
+<body class="selection:bg-sky-500 selection:text-white">
+
+  <!-- Top Header -->
+  <header class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-bold text-white text-lg">
+          CW
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-base sm:text-lg tracking-tight text-white" id="app-title">CalcX CW · 在線科學計算器</h1>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
+              100% fx-83GT CW Workflow Edition
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">
+            HOME 5-App Grid · Circular OK/BACK Nav · CATALOG · TOOLS · x · f(x) · VARIABLE · FORMAT · Math Box
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center flex-wrap gap-2">
+        <div class="hidden xl:flex items-center gap-1 bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-1 text-[11px]">
+          <span class="text-slate-500 mr-1">Apps:</span>
+          <button type="button" data-key="QUICK_CALC" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-sky-300 font-semibold">Calculate</button>
+          <button type="button" data-key="QUICK_STAT" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-sky-300 font-semibold">Statistics</button>
+          <button type="button" data-key="QUICK_TABLE" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-sky-300 font-semibold">Table</button>
+          <button type="button" data-key="QUICK_RATIO" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-sky-300 font-semibold">Ratio</button>
+          <button type="button" data-key="QUICK_MATHBOX" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-emerald-300 font-semibold">Math Box</button>
+        </div>
+
+        <button id="btn-toggle-training" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center gap-1.5">
+          <span>🎯</span>
+          <span id="lbl-training-btn">CW 教學訓練 (CW Drills)</span>
+        </button>
+
+        <button id="btn-cycle-theme" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">
+          🎨 <span id="lbl-theme-name">Matte Black</span>
+        </button>
+
+        <button id="btn-toggle-lang" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-sky-300 border border-slate-700 hover:bg-slate-700 transition">
+          🌐 <span id="lbl-lang">EN / 繁中</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+    <!-- Left Column: Physical fx-83GT CW Simulator -->
+    <section class="lg:col-span-5 xl:col-span-5 flex flex-col items-center">
+      <!-- Active Drill Banner -->
+      <div id="active-drill-banner" class="hidden w-full max-w-[366px] mb-3 p-3 rounded-xl bg-sky-950/90 border border-sky-500/40 shadow-lg">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-300" id="drill-banner-title">Active CW Drill</span>
+          <button id="btn-stop-drill" type="button" class="text-xs text-slate-400 hover:text-white px-1.5 py-0.5 rounded bg-slate-800/80">Exit ×</button>
+        </div>
+        <p class="text-xs text-slate-200 mb-2" id="drill-banner-desc"></p>
+        <div class="flex items-center justify-between text-xs bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
+          <div>
+            <span class="text-slate-400">Next Key: </span>
+            <span id="drill-next-key" class="font-bold text-amber-300 mono-font"></span>
+          </div>
+          <span id="drill-progress" class="text-sky-400 font-semibold mono-font">0 / 0</span>
+        </div>
+      </div>
+
+      <!-- Calculator Hardware Unit (fx-83GT CW Layout) -->
+      <div id="cw-chassis" class="cw-chassis w-full max-w-[366px] p-4 sm:p-5 select-none">
+
+        <!-- Distinct Non-Affiliated Header (fx-83GT CW style: clean matte top, AAA battery powered) -->
+        <div class="flex items-center justify-between mb-2.5 px-1.5">
+          <div>
+            <span class="font-extrabold tracking-wider text-sm text-slate-100 mono-font">CALCX</span>
+            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 mono-font ml-1">CW-83 EDU</span>
+          </div>
+          <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+            4-GRADATION HD DISPLAY
+          </div>
+        </div>
+
+        <!-- High-Definition 4-Gradation LCD Screen -->
+        <div class="lcd-bezel mb-3">
+          <div id="lcd-screen" class="lcd-screen h-[132px] flex flex-col justify-between p-2.5 mono-font">
+            <!-- Status Indicators Bar -->
+            <div id="lcd-status-bar" class="flex items-center justify-between text-[10px] font-bold tracking-tight border-b border-black/10 pb-1 select-none">
+              <div class="flex items-center gap-1.5">
+                <span id="ind-shift" class="px-1 rounded bg-black/85 text-[#d9e4d4] opacity-15">S</span>
+                <span id="ind-math" class="px-1 rounded border border-black/40">√□</span>
+                <span id="ind-angle" class="px-1 rounded bg-black/85 text-[#d9e4d4]">D</span>
+                <span id="ind-fix" class="opacity-15">FIX</span>
+                <span id="ind-sci" class="opacity-15">SCI</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span id="ind-hist-up" class="opacity-15">▲</span>
+                <span id="ind-hist-down" class="opacity-15">▼</span>
+                <span id="ind-app" class="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-black/15">Calculate</span>
+              </div>
+            </div>
+
+            <!-- Main LCD Viewport -->
+            <div id="lcd-viewport" class="flex-1 flex flex-col justify-between overflow-hidden relative py-0.5">
+              <div id="lcd-input-line" class="text-[15px] leading-tight min-h-[44px] flex items-center overflow-x-auto whitespace-nowrap pr-2 math-font"></div>
+              <div id="lcd-output-line" class="text-right text-[18px] font-bold leading-none min-h-[32px] flex items-end justify-end overflow-x-auto whitespace-nowrap math-font"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CW TOP NAVIGATION ZONE: 3-Row × 5-Col Cluster with Circular D-Pad + Center OK -->
+        <div class="grid grid-cols-6 gap-1.5 items-center mb-2">
+          <!-- Row 1 Left: ON, HOME -->
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="text-slate-300">ON</span></div>
+            <button type="button" data-key="ON" class="cw-key key-nav-pill">ON</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span></span></div>
+            <button type="button" data-key="HOME" class="cw-key key-nav-pill font-bold text-sky-300">HOME</button>
+          </div>
+
+          <!-- Center Columns 3-4 spanning 3 rows: Circular D-Pad with Center OK Button -->
+          <div class="col-span-2 row-span-3 flex items-center justify-center">
+            <div class="relative w-[96px] h-[96px] rounded-full bg-gradient-to-b from-slate-700 to-slate-900 border-2 border-slate-600 shadow-inner flex items-center justify-center">
+              <button type="button" data-key="UP" aria-label="Cursor Up" class="cw-key absolute top-1 left-1/2 -translate-x-1/2 w-8 h-6 rounded-t-full bg-slate-700 hover:bg-slate-600 text-[10px] text-slate-200 shadow-none border-0">▲</button>
+              <button type="button" data-key="DOWN" aria-label="Cursor Down" class="cw-key absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-6 rounded-b-full bg-slate-700 hover:bg-slate-600 text-[10px] text-slate-200 shadow-none border-0">▼</button>
+              <button type="button" data-key="LEFT" aria-label="Cursor Left" class="cw-key absolute left-1 top-1/2 -translate-y-1/2 w-6 h-8 rounded-l-full bg-slate-700 hover:bg-slate-600 text-[10px] text-slate-200 shadow-none border-0">◀</button>
+              <button type="button" data-key="RIGHT" aria-label="Cursor Right" class="cw-key absolute right-1 top-1/2 -translate-y-1/2 w-6 h-8 rounded-r-full bg-slate-700 hover:bg-slate-600 text-[10px] text-slate-200 shadow-none border-0">▶</button>
+              <button type="button" data-key="OK" class="cw-key w-9 h-9 rounded-full bg-gradient-to-b from-slate-600 to-slate-800 hover:from-slate-500 text-[11px] font-extrabold text-white border border-slate-500 shadow">OK</button>
+            </div>
+          </div>
+
+          <!-- Row 1 Right: SETTINGS, BACK -->
+          <div class="col-span-2 grid grid-cols-2 gap-1.5">
+            <div class="flex flex-col">
+              <div class="sub-label-row justify-center"><span></span></div>
+              <button type="button" data-key="SETTINGS" class="cw-key key-nav-pill text-[9px]" title="SETTINGS">⚙ SET</button>
+            </div>
+            <div class="flex flex-col">
+              <div class="sub-label-row justify-center"><span></span></div>
+              <button type="button" data-key="BACK" class="cw-key key-nav-pill" title="BACK">↩ BACK</button>
+            </div>
+          </div>
+
+          <!-- Row 2 Left: SHIFT, VARIABLE -->
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">SHIFT</span></div>
+            <button type="button" data-key="SHIFT" class="cw-key key-nav-pill bg-amber-600/90 text-white font-bold">SHIFT</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-var">A–z</span></div>
+            <button type="button" data-key="VARIABLE" class="cw-key key-nav-pill" title="VARIABLE Menu">x,y,z</button>
+          </div>
+
+          <!-- Row 2 Right: FUNCTION f(x), Page Up ▲ -->
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span>g(x)</span></div>
+            <button type="button" data-key="FUNCTION" class="cw-key key-nav-pill italic font-serif" title="f(x) / g(x) Menu">f(x)</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span>PgUp</span></div>
+            <button type="button" data-key="PGUP" class="cw-key key-nav-pill" title="Page Scroll Up">⏫</button>
+          </div>
+
+          <!-- Row 3 Left: CATALOG, TOOLS -->
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span></span></div>
+            <button type="button" data-key="CATALOG" class="cw-key key-nav-pill text-[9px]" title="CATALOG">📖 CAT</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span></span></div>
+            <button type="button" data-key="TOOLS" class="cw-key key-nav-pill text-[9px]" title="TOOLS">🔧 TOOL</button>
+          </div>
+
+          <!-- Row 3 Right: Dedicated x key, Page Down ▼ -->
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift"> QR </span></div>
+            <button type="button" data-key="VAR_X" class="cw-key key-nav-pill italic font-serif text-sm font-bold text-sky-300" title="Dedicated x Key (SHIFT: QR)">x</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span>PgDn</span></div>
+            <button type="button" data-key="PGDN" class="cw-key key-nav-pill" title="Page Scroll Down">⏬</button>
+          </div>
+        </div>
+
+        <!-- CW SCIENTIFIC FUNCTION GRID (2 Rows × 6 Columns) -->
+        <div class="grid grid-cols-6 gap-1.5 mb-2.5">
+          <!-- Row 4: [■/□ (SHIFT a b/c)] [√■ (SHIFT ⁿ√■)] [x² (SHIFT x⁻¹)] [x^■ (SHIFT .■̇)] [log■□ (SHIFT 10^■)] [ln (SHIFT e^■)] -->
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">a b/c</span></div>
+            <button type="button" data-key="FRAC" class="cw-key key-fn-cw">■/□</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">ⁿ√■</span></div>
+            <button type="button" data-key="SQRT" class="cw-key key-fn-cw">√■</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">x⁻¹</span></div>
+            <button type="button" data-key="SQ" class="cw-key key-fn-cw italic font-serif">x²</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">.■̇</span></div>
+            <button type="button" data-key="POW" class="cw-key key-fn-cw italic font-serif">x■</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">10■</span></div>
+            <button type="button" data-key="LOG_AB" class="cw-key key-fn-cw">log■□</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">e■</span></div>
+            <button type="button" data-key="LN" class="cw-key key-fn-cw">ln</button>
+          </div>
+
+          <!-- Row 5: [(-)] [° ’ ” (SHIFT :)] [sin (SHIFT sin⁻¹)] [cos (SHIFT cos⁻¹)] [tan (SHIFT tan⁻¹)] [( (SHIFT ))] -->
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-var">A</span></div>
+            <button type="button" data-key="NEG" class="cw-key key-fn-cw">(−)</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-shift">:</span><span class="lbl-var">B</span></div>
+            <button type="button" data-key="DMS" class="cw-key key-fn-cw">° ’ ”</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-shift">sin⁻¹</span><span class="lbl-var">C</span></div>
+            <button type="button" data-key="SIN" class="cw-key key-fn-cw">sin</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-shift">cos⁻¹</span><span class="lbl-var">D</span></div>
+            <button type="button" data-key="COS" class="cw-key key-fn-cw">cos</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-shift">tan⁻¹</span><span class="lbl-var">E</span></div>
+            <button type="button" data-key="TAN" class="cw-key key-fn-cw">tan</button>
+          </div>
+          <div class="flex flex-col grid grid-cols-2 gap-1">
+            <div class="flex flex-col">
+              <div class="sub-label-row"><span class="lbl-var">F</span></div>
+              <button type="button" data-key="LPAREN" class="cw-key key-fn-cw">(</button>
+            </div>
+            <div class="flex flex-col">
+              <div class="sub-label-row"><span class="lbl-shift">,</span></div>
+              <button type="button" data-key="RPAREN" class="cw-key key-fn-cw">)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CW BOTTOM NUMBER & ARITHMETIC PAD (4 Rows × 5 Columns) -->
+        <div class="grid grid-cols-5 gap-2">
+          <!-- Row 6: 7 (SHIFT π), 8 (SHIFT e), 9, DEL (SHIFT INS), AC (SHIFT OFF) -->
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">π</span></div>
+            <button type="button" data-key="7" class="cw-key key-num-cw">7</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">e</span></div>
+            <button type="button" data-key="8" class="cw-key key-num-cw">8</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="9" class="cw-key key-num-cw">9</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">INS</span></div>
+            <button type="button" data-key="DEL" class="cw-key key-del-ac">DEL</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">OFF</span></div>
+            <button type="button" data-key="AC" class="cw-key key-del-ac">AC</button>
+          </div>
+
+          <!-- Row 7: 4, 5, 6, ×, ÷ -->
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-var">x</span></div>
+            <button type="button" data-key="4" class="cw-key key-num-cw">4</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-var">y</span></div>
+            <button type="button" data-key="5" class="cw-key key-num-cw">5</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span class="lbl-var">z</span></div>
+            <button type="button" data-key="6" class="cw-key key-num-cw">6</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="MUL" class="cw-key key-num-cw">×</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="DIV" class="cw-key key-num-cw">÷</button>
+          </div>
+
+          <!-- Row 8: 1, 2, 3, +, − -->
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="1" class="cw-key key-num-cw">1</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="2" class="cw-key key-num-cw">2</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="3" class="cw-key key-num-cw">3</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="ADD" class="cw-key key-num-cw">+</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="SUB" class="cw-key key-num-cw">−</button>
+          </div>
+
+          <!-- Row 9: 0, ., ×10^x, FORMAT (SHIFT Ans), EXE (SHIFT ≈) -->
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="0" class="cw-key key-num-cw">0</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="DOT" class="cw-key key-num-cw">.</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row"><span></span></div>
+            <button type="button" data-key="EXP" class="cw-key key-num-cw text-xs">×10ˣ</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">Ans</span></div>
+            <button type="button" data-key="FORMAT" class="cw-key key-num-cw text-[10px] font-extrabold text-sky-300" title="FORMAT Menu / Toggle">FORMAT</button>
+          </div>
+          <div class="flex flex-col">
+            <div class="sub-label-row justify-center"><span class="lbl-shift">≈</span></div>
+            <button type="button" data-key="EXE" class="cw-key key-exe-cw">EXE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyboard Shortcuts Legend -->
+      <div class="mt-3 text-center text-[11px] text-slate-400 max-w-[366px] leading-relaxed">
+        Keyboard: <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">Enter</kbd> = EXE/OK ·
+        <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">Backspace</kbd> = DEL/BACK ·
+        <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">Esc</kbd> = AC ·
+        <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">Space</kbd> = SHIFT ·
+        <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">F</kbd> = FORMAT
+      </div>
+    </section>
+
+    <!-- Right Column: Educational Training Workbench -->
+    <section class="lg:col-span-7 xl:col-span-7 flex flex-col gap-4">
+
+      <!-- Tab Bar -->
+      <div class="flex flex-wrap gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+        <button type="button" data-tab="drills" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-sky-500 text-white shadow transition">
+          🎯 CW Interactive Drills
+        </button>
+        <button type="button" data-tab="tape" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">
+          📜 Keystroke Sequence &amp; Tape
+        </button>
+        <button type="button" data-tab="memory" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">
+          💾 Variables (A–F, x, y, z) &amp; f(x)
+        </button>
+        <button type="button" data-tab="guide" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">
+          📖 GT-X vs GT CW Workflow Map
+        </button>
+      </div>
+
+      <!-- TAB 1: Interactive CW Training Drills -->
+      <div id="tab-panel-drills" class="tab-panel bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h2 class="text-base font-bold text-white">Hands-On fx-83GT CW Workflow Drills</h2>
+            <p class="text-xs text-slate-400">
+              Master the new CW navigation: <code class="text-sky-300">FORMAT</code> menu, <code class="text-sky-300">CATALOG</code>, <code class="text-sky-300">f(x)</code> definition, <code class="text-sky-300">VARIABLE</code> sheet, and <code class="text-emerald-300">Math Box</code>.
+            </p>
+          </div>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30" id="drills-score-badge">
+            Completed: 0 / 8
+          </span>
+        </div>
+
+        <div id="drills-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+
+      <!-- TAB 2: Keystroke Sequence Logger & Calculation History Tape -->
+      <div id="tab-panel-tape" class="tab-panel hidden bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h2 class="text-base font-bold text-white">Live CW Keystroke Sequence Recorder</h2>
+            <p class="text-xs text-slate-400">Share exact CW button sequences with students during lessons</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-copy-keystrokes" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-sky-300 hover:bg-slate-700 border border-slate-700">
+              Copy Sequence
+            </button>
+            <button id="btn-clear-keystrokes" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-rose-300 hover:bg-slate-700 border border-slate-700">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <div id="keystroke-stream" class="min-h-[64px] max-h-[120px] overflow-y-auto p-3 rounded-xl bg-slate-950/90 border border-slate-800 flex flex-wrap items-center gap-1.5 mb-4 mono-font text-xs">
+          <span class="text-slate-500 italic">Press any calculator button to record the exact key sequence...</span>
+        </div>
+
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-slate-200">Calculation Paper Tape (Click to Replay)</h3>
+          <span class="text-xs text-slate-400" id="history-count-label">0 entries</span>
+        </div>
+        <div id="history-tape-list" class="space-y-2 max-h-[290px] overflow-y-auto pr-1"></div>
+      </div>
+
+      <!-- TAB 3: Variables (A-F, x, y, z) & Registered Functions f(x), g(x) -->
+      <div id="tab-panel-memory" class="tab-panel hidden bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h2 class="text-base font-bold text-white">CW Variable Sheet (A–F, x, y, z) &amp; Registered Functions</h2>
+            <p class="text-xs text-slate-400">
+              On the fx-83GT CW, press <code class="text-sky-300">x,y,z (VARIABLE)</code> to open the full 9-variable sheet and select <strong>Store</strong>, <strong>Recall</strong>, or <strong>Edit</strong>.
+            </p>
+          </div>
+          <button id="btn-clear-memories" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 hover:bg-rose-500/25">
+            Reset Variable Memory
+          </button>
+        </div>
+
+        <div id="memory-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-4"></div>
+
+        <!-- Registered f(x) and g(x) Inspector -->
+        <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs">
+          <div class="font-bold text-sky-300 flex items-center justify-between">
+            <span>Registered Functions (Shared across Calculate &amp; Table Apps via <code class="text-white">f(x)</code> key)</span>
+            <button type="button" data-key="FUNCTION" class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">Open f(x) Menu</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mono-font">
+            <div class="p-2 rounded bg-slate-900 border border-slate-800">
+              <span class="text-slate-400">f(x) = </span><span id="insp-fx" class="text-emerald-300 font-bold">x² + 1</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900 border border-slate-800">
+              <span class="text-slate-400">g(x) = </span><span id="insp-gx" class="text-emerald-300 font-bold">2×x − 3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: GT-X to GT CW Transition Guide for Teachers & Students -->
+      <div id="tab-panel-guide" class="tab-panel hidden bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+        <h2 class="text-base font-bold text-white mb-3">Key Changes on the fx-83GT CW (Teacher &amp; Student Guide)</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-700 text-slate-300 bg-slate-950/60">
+                <th class="p-2.5 font-bold">Operation / Feature</th>
+                <th class="p-2.5 font-bold text-amber-300">Old GT-X Sequence</th>
+                <th class="p-2.5 font-bold text-sky-300">New fx-83GT CW Sequence</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80 text-slate-300">
+              <tr>
+                <td class="p-2 font-semibold text-white">Convert Fraction / Surd ⇔ Decimal</td>
+                <td class="p-2 mono-font">S⇔D</td>
+                <td class="p-2 mono-font text-sky-300">FORMAT → [Decimal] or [Standard] (or SHIFT + EXE ≈)</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-semibold text-white">Prime Factorization (FACT)</td>
+                <td class="p-2 mono-font">SHIFT + ° ’ ” (FACT)</td>
+                <td class="p-2 mono-font text-sky-300">FORMAT → [Prime Factor] → OK</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-semibold text-white">Pi (π) &amp; Euler's e</td>
+                <td class="p-2 mono-font">SHIFT / ALPHA + ×10ˣ</td>
+                <td class="p-2 mono-font text-sky-300">SHIFT + 7 (π) · SHIFT + 8 (e)</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-semibold text-white">Ans (Last Answer)</td>
+                <td class="p-2 mono-font">Dedicated Ans key</td>
+                <td class="p-2 mono-font text-sky-300">SHIFT + FORMAT (Ans)</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-semibold text-white">Input Variable x</td>
+                <td class="p-2 mono-font">ALPHA + )</td>
+                <td class="p-2 mono-font text-sky-300">Dedicated [x] key (below f(x))</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-semibold text-white">Store / Recall Variables (A–z)</td>
+                <td class="p-2 mono-font">STO / RCL + Key</td>
+                <td class="p-2 mono-font text-sky-300">[x,y,z] (VARIABLE) → Select Var → [Store] / [Recall] / [Edit]</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-semibold text-white">%, !, nPr, nCr, RanInt, GCD, LCM</td>
+                <td class="p-2 mono-font">SHIFT + Key</td>
+                <td class="p-2 mono-font text-sky-300">[CATALOG] → [Probability] or [Numeric Calc]</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-semibold text-white">App Selection &amp; Math Box</td>
+                <td class="p-2 mono-font">MENU (4 icons)</td>
+                <td class="p-2 mono-font text-sky-300">[HOME] (5 apps: Calculate, Statistics, Table, Ratio, Math Box)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Status Footer Card -->
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+          <span id="status-summary-line">App: Calculate · Input/Output: MathI/MathO · Angle: Degree (D) · Norm 2</span>
+        </div>
+        <div class="text-[11px] text-slate-500">
+          Educational Simulator · 100% fx-83GT CW Workflow Compatible
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /*************************************************************************
+     * CalcX CW · 100% fx-83GT CW Functional & Menu-Hierarchy Engine
+     * Implements:
+     * - HOME 5-App Launcher (Calculate, Statistics, Table, Ratio, Math Box)
+     * - Circular D-Pad + Center OK + BACK + PGUP/PGDN menu navigation
+     * - SETTINGS (Calc Settings, System Settings, Reset, Get Started)
+     * - CATALOG (Func Analysis, Probability, Numeric Calc, Angle/Coord/Sexa, Hyperbolic/Trig, Other)
+     * - TOOLS (App-specific tools + Undo)
+     * - VARIABLE Sheet (A, B, C, D, E, F, x, y, z with Store, Recall, Edit)
+     * - FUNCTION f(x) / g(x) (f(x), g(x), Define f(x), Define g(x) with composite function support)
+     * - FORMAT Menu (Standard, Decimal, Prime Factor, Recurring Decimal, Improper Fraction, Mixed Fraction, ENG Notation, Sexagesimal)
+     * - Math Box App (Dice Roll, Coin Toss, Number Line, Circle / Clock)
+     *************************************************************************/
+
+    function gcd(a, b) {
+      a = Math.abs(Math.round(a));
+      b = Math.abs(Math.round(b));
+      while (b > 0) { const t = b; b = a % b; a = t; }
+      return a || 1;
+    }
+    function lcm(a, b) {
+      a = Math.abs(Math.round(a));
+      b = Math.abs(Math.round(b));
+      if (a === 0 || b === 0) return 0;
+      return Math.abs((a / gcd(a, b)) * b);
+    }
+
+    function toFraction(val, maxDen = 100000) {
+      if (!Number.isFinite(val)) return null;
+      const sign = val < 0 ? -1 : 1;
+      const x = Math.abs(val);
+      if (Math.abs(x - Math.round(x)) < 1e-11) return { n: sign * Math.round(x), d: 1 };
+      let h1 = 1, h2 = 0, k1 = 0, k2 = 1, b = x;
+      for (let i = 0; i < 45; i++) {
+        const a = Math.floor(b);
+        const h = a * h1 + h2;
+        const k = a * k1 + k2;
+        if (k > maxDen) break;
+        h2 = h1; h1 = h; k2 = k1; k1 = k;
+        const rem = b - a;
+        if (Math.abs(x - h1 / k1) < 1e-11) {
+          const g = gcd(h1, k1);
+          return { n: sign * (h1 / g), d: k1 / g };
+        }
+        if (rem < 1e-12) break;
+        b = 1 / rem;
+      }
+      return null;
+    }
+
+    function toPiMultiple(val) {
+      if (!Number.isFinite(val) || Math.abs(val) < 1e-11) return null;
+      const ratio = val / Math.PI;
+      const frac = toFraction(ratio, 720);
+      if (frac && Math.abs(val - (frac.n / frac.d) * Math.PI) < 1e-10) {
+        if (Math.abs(frac.n) <= 500 && frac.d <= 360) return frac;
+      }
+      return null;
+    }
+
+    function toExactSurd(val) {
+      if (!Number.isFinite(val) || Math.abs(val) < 1e-11) return null;
+      if (toFraction(val, 10000)) return null;
+      const sign = val < 0 ? -1 : 1;
+      const sq = val * val;
+      const sqFrac = toFraction(sq, 400);
+      if (sqFrac && sqFrac.n > 0 && sqFrac.n <= 5000) {
+        const rad = sqFrac.n * sqFrac.d;
+        let coeff = 1, rem = rad;
+        for (let k = 2; k * k <= rem; k++) {
+          while (rem % (k * k) === 0) { coeff *= k; rem = Math.floor(rem / (k * k)); }
+        }
+        if (rem > 1 && rem <= 300) {
+          const g = gcd(coeff, sqFrac.d);
+          return { p: 0, a: sign * (coeff / g), b: rem, c: sqFrac.d / g };
+        }
+      }
+      for (const b of [2, 3, 5, 6, 7, 10]) {
+        const rootB = Math.sqrt(b);
+        for (let c = 1; c <= 12; c++) {
+          const scaled = val * c;
+          for (let a = -12; a <= 12; a++) {
+            if (a === 0) continue;
+            const pFloat = scaled - a * rootB;
+            const pRound = Math.round(pFloat);
+            if (Math.abs(pFloat - pRound) < 1e-9 && Math.abs(pRound) <= 50) {
+              const g = gcd(gcd(pRound, a), c);
+              return { p: pRound / g, a: a / g, b, c: c / g };
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    function getRecurringDecimalHTML(n, d, decimalMark = '.') {
+      if (d <= 1) return null;
+      let tempD = d;
+      while (tempD % 2 === 0) tempD /= 2;
+      while (tempD % 5 === 0) tempD /= 5;
+      if (tempD === 1) return null;
+
+      const signStr = n < 0 ? '−' : '';
+      let num = Math.abs(n);
+      const intPart = Math.floor(num / d);
+      let rem = num % d;
+      const seen = new Map();
+      const digits = [];
+      let pos = 0;
+      while (rem !== 0 && !seen.has(rem) && pos < 60) {
+        seen.set(rem, pos);
+        rem *= 10;
+        digits.push(Math.floor(rem / d));
+        rem %= d;
+        pos++;
+      }
+      if (rem === 0 || !seen.has(rem)) return null;
+      const start = seen.get(rem);
+      const nonRec = digits.slice(0, start).join('');
+      const recDigits = digits.slice(start);
+      if (recDigits.length > 18) return null;
+
+      const recHtml = recDigits.length === 1
+        ? `<span class="overdot">${recDigits[0]}</span>`
+        : `<span class="overdot">${recDigits[0]}</span>${recDigits.slice(1, -1).join('')}<span class="overdot">${recDigits[recDigits.length - 1]}</span>`;
+      return `${signStr}${intPart}${decimalMark}${nonRec}${recHtml}`;
+    }
+
+    function primeFactorize(num) {
+      const n = Math.round(num);
+      if (!Number.isFinite(num) || Math.abs(num - n) > 1e-9 || n <= 1 || n >= 1e10) return null;
+      let temp = n;
+      const factors = [];
+      for (let p = 2; p * p <= temp && p <= 1009; p += (p === 2 ? 1 : 2)) {
+        if (temp % p === 0) {
+          let count = 0;
+          while (temp % p === 0) { count++; temp = Math.floor(temp / p); }
+          factors.push({ p, exp: count });
+        }
+      }
+      if (temp > 1) factors.push({ p: temp, exp: 1 });
+      return factors;
+    }
+
+    function toDMSString(val) {
+      if (!Number.isFinite(val)) return 'Math ERROR';
+      const sign = val < 0 ? '−' : '';
+      const totalSec = Math.round(Math.abs(val) * 3600 * 100) / 100;
+      const deg = Math.floor(totalSec / 3600);
+      const rem = totalSec - deg * 3600;
+      const min = Math.floor(rem / 60);
+      const sec = Math.round((rem - min * 60) * 100) / 100;
+      return `${sign}${deg}°${min}’${sec}”`;
+    }
+
+    function createSlot(items = []) { return items; }
+    function tok(text, evalStr = null, kind = 'atom') {
+      return { type: 'token', text, evalStr: evalStr !== null ? evalStr : text, kind };
+    }
+
+    // --- Main State for fx-83GT CW ---
+    const state = {
+      powerOn: true,
+      app: 'Calculate', // 'Calculate' | 'Statistics' | 'Table' | 'Ratio' | 'MathBox'
+      homeIdx: 0,       // 0..4
+      shift: false,
+      insertMode: true,
+
+      // CW Default Settings (Norm 2 & Digit Separator On by default per CW manual!)
+      setup: {
+        ioMode: 'MathI/MathO',
+        angleUnit: 'D',
+        numberFormat: 'Norm2',
+        fixDigits: 3,
+        sciDigits: 3,
+        fracResult: 'd/c',
+        decimalMark: '.',
+        digitSeparator: true,
+        statFreq: true,
+        tableType: 'f(x)/g(x)',
+        contrast: 5
+      },
+
+      // Stack-based Menu Navigation for authentic BACK key behavior
+      menuStack: [], //Each item: { id, title, items, selectedIdx, extra }
+
+      rootSlot: [],
+      cursorSlot: null,
+      cursorIndex: 0,
+      undoSnapshot: null,
+
+      evaluated: false,
+      lastResultValue: 0,
+      lastSecondaryText: '',
+      displayFormatMode: 'DEFAULT', // 'DEFAULT' | 'DECIMAL' | 'FRAC_IMPROPER' | 'FRAC_MIXED' | 'RECURRING' | 'FACT' | 'DMS' | 'ENG'
+      engModeActive: false,
+      engExponentOffset: 0,
+
+      // 9 Variables (A, B, C, D, E, F, x, y, z) + Ans
+      memories: {
+        Ans: 0, A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, x: 0, y: 0, z: 0
+      },
+      varCursorIdx: 0,
+      varEditTarget: null,
+      varEditBuf: '',
+
+      // Persistent f(x) and g(x) definitions across Calculate & Table apps
+      fxDef: 'x²+1',
+      gxDef: '2×x−3',
+      definingFuncTarget: null, // 'f' | 'g'
+      definingFuncBuf: '',
+
+      history: [],
+      historyIndex: -1,
+      keystrokeLog: [],
+
+      // Statistics App State
+      statMode: '1-VAR', // '1-VAR' | '2-VAR'
+      statRegType: 'LIN',
+      statData: [
+        { x: 1, y: 2, freq: 1 },
+        { x: 2, y: 5, freq: 2 },
+        { x: 3, y: 7, freq: 1 },
+        { x: 4, y: 10, freq: 1 }
+      ],
+      statRow: 0,
+      statCol: 0,
+      statCellBuf: '',
+      statScreen: 'EDITOR', // 'EDITOR' | 'RESULTS_1VAR' | 'RESULTS_2VAR' | 'RESULTS_REG'
+
+      // Table App State
+      tableStart: -1,
+      tableEnd: 3,
+      tableStep: 1,
+      tableRangeField: 0,
+      tableRangeBuf: '',
+      tableRows: [],
+      tableScroll: 0,
+      tableScreen: 'VIEW', // 'VIEW' | 'RANGE'
+
+      // Ratio App State
+      ratioType: 1, // 1: A:B=X:D, 2: A:B=C:X
+      ratioCoeffs: { A: 3, B: 8, C: 10, D: 12 },
+      ratioField: 0,
+      ratioBuf: '',
+      ratioResult: null,
+
+      // Math Box App State (Dice Roll, Coin Toss, Number Line, Circle)
+      mathBoxTool: 'MENU', // 'MENU' | 'DICE' | 'COIN' | 'NUMLINE' | 'CIRCLE'
+      diceCount: 2,
+      diceAttempts: 50,
+      diceResults: [],
+      coinCount: 2,
+      coinAttempts: 50,
+      coinResults: [],
+      numLineA: 'x ≤ 1',
+      numLineB: 'x > -2',
+      circleAngle1: 45,
+      circleAngle2: 135,
+
+      lang: 'BILINGUAL',
+      chassisTheme: 0,
+      activeDrill: null,
+      drillStep: 0,
+      completedDrills: new Set()
+    };
+
+    state.cursorSlot = state.rootSlot;
+
+    // --- CW Training Drills ---
+    const DRILLS = [
+      {
+        id: 'cw-format',
+        title: '1. FORMAT Menu Conversion (FORMAT 格式轉換選單)',
+        desc: 'Calculate 3 ÷ 2 = 3/2, then press FORMAT and select [Decimal] or [Mixed Fraction].',
+        targetKeys: ['3', 'DIV', '2', 'EXE', 'FORMAT', 'DOWN', 'OK'],
+        expectedHint: '3/2 → FORMAT → Decimal (1.5)'
+      },
+      {
+        id: 'cw-prime',
+        title: '2. Prime Factorization via FORMAT (質因數分解)',
+        desc: 'Evaluate 1014, press FORMAT, scroll to [Prime Factor], and press OK.',
+        targetKeys: ['1', '0', '1', '4', 'EXE', 'FORMAT', 'DOWN', 'DOWN', 'OK'],
+        expectedHint: '1014 = 2 × 3 × 13²'
+      },
+      {
+        id: 'cw-fx-def',
+        title: '3. Register & Evaluate f(x) (定義並計算 f(x) 函數)',
+        desc: 'Press f(x), select [f(x)], enter 3, close bracket, and press EXE to evaluate f(3).',
+        targetKeys: ['FUNCTION', 'OK', '3', 'RPAREN', 'EXE'],
+        expectedHint: 'Evaluates f(3) = 3² + 1 = 10'
+      },
+      {
+        id: 'cw-var-store',
+        title: '4. Variable Sheet Store & Recall (x,y,z 變數列表儲存)',
+        desc: 'Calculate 3 + 5 = 8, press [x,y,z] (VARIABLE), press OK on [A=], and select [Store].',
+        targetKeys: ['3', 'ADD', '5', 'EXE', 'VARIABLE', 'OK', 'OK'],
+        expectedHint: 'Stores 8 directly into Variable A'
+      },
+      {
+        id: 'cw-catalog-gcd',
+        title: '5. CATALOG → Numeric Calc → GCD (最大公因數)',
+        desc: 'Open CATALOG, select [Numeric Calc] → [GCD], and calculate GCD(28, 35).',
+        targetKeys: ['CATALOG', 'DOWN', 'DOWN', 'OK', 'OK', '2', '8', 'SHIFT', 'RPAREN', '3', '5', 'RPAREN', 'EXE'],
+        expectedHint: 'GCD(28, 35) = 7'
+      },
+      {
+        id: 'cw-pi-circle',
+        title: '6. Pi (SHIFT + 7) & Powers (圓面積 πr²)',
+        desc: 'Calculate π × 5² using SHIFT + 7 (π) and x², then press SHIFT + EXE (≈) for decimal.',
+        targetKeys: ['SHIFT', '7', 'MUL', '5', 'SQ', 'EXE', 'SHIFT', 'EXE'],
+        expectedHint: '25π ⇔ 78.53981634'
+      },
+      {
+        id: 'cw-mathbox',
+        title: '7. Math Box Probability Simulation (Math Box 擲骰模擬)',
+        desc: 'Press HOME, select [Math Box], press OK, and launch [Dice Roll] simulation.',
+        targetKeys: ['HOME', 'RIGHT', 'DOWN', 'OK', 'OK', 'OK'],
+        expectedHint: 'Simulates 2-dice rolls with relative frequencies'
+      },
+      {
+        id: 'cw-settings-angle',
+        title: '8. SETTINGS → Calc Settings → Angle Unit (角度單位設定)',
+        desc: 'Press SETTINGS, select [Calc Settings] → [Angle Unit] → [Degree].',
+        targetKeys: ['SETTINGS', 'OK', 'DOWN', 'OK', 'OK'],
+        expectedHint: 'Configures Angle Unit to Degree (D)'
+      }
+    ];
+
+    // --- Menu Stack Helpers ---
+    function pushMenu(id, title, items, selectedIdx = 0, extra = {}) {
+      state.menuStack.push({ id, title, items, selectedIdx, extra });
+    }
+    function popMenu() {
+      if (state.menuStack.length > 0) state.menuStack.pop();
+    }
+    function clearMenus() {
+      state.menuStack = [];
+    }
+    function topMenu() {
+      return state.menuStack.length > 0 ? state.menuStack[state.menuStack.length - 1] : null;
+    }
+
+    // --- AST & Cursor Navigation ---
+    function findSlotContext(currentSlot, targetSlot, parentNode = null, slotIndex = -1, parentSlot = null, nodeIndex = -1) {
+      if (currentSlot === targetSlot) return { parentNode, slotIndex, parentSlot, nodeIndex };
+      for (let i = 0; i < currentSlot.length; i++) {
+        const item = currentSlot[i];
+        if (item.slots) {
+          for (let s = 0; s < item.slots.length; s++) {
+            const found = findSlotContext(item.slots[s], targetSlot, item, s, currentSlot, i);
+            if (found) return found;
+          }
+        }
+      }
+      return null;
+    }
+
+    function saveUndoState() {
+      state.undoSnapshot = JSON.stringify({ rootSlot: state.rootSlot });
+    }
+
+    function insertNodeAtCursor(node) {
+      saveUndoState();
+      if (state.evaluated) {
+        const startsWithAns = (
+          node.type === 'token' &&
+          (['+', '−', '×', '÷', 'P', 'C', '²', '⁻¹', '!', '%'].includes(node.text))
+        ) || (node.type === 'power');
+        state.rootSlot = [];
+        state.cursorSlot = state.rootSlot;
+        state.cursorIndex = 0;
+        state.evaluated = false;
+        state.engModeActive = false;
+        state.lastSecondaryText = '';
+        state.displayFormatMode = 'DEFAULT';
+        if (startsWithAns) {
+          state.rootSlot.push(tok('Ans', 'Ans', 'var'));
+          state.cursorIndex = 1;
+        }
+      }
+
+      if (!state.insertMode && node.type === 'token' && state.cursorIndex < state.cursorSlot.length) {
+        state.cursorSlot[state.cursorIndex] = node;
+        state.cursorIndex++;
+      } else {
+        state.cursorSlot.splice(state.cursorIndex, 0, node);
+        state.cursorIndex++;
+      }
+
+      if (node.slots && node.slots.length > 0) {
+        for (let s = 0; s < node.slots.length; s++) {
+          if (node.slots[s].length === 0) {
+            state.cursorSlot = node.slots[s];
+            state.cursorIndex = 0;
+            return;
+          }
+        }
+        state.cursorSlot = node.slots[0];
+        state.cursorIndex = node.slots[0].length;
+      }
+    }
+
+    function extractPrecedingAtoms() {
+      if (state.evaluated) {
+        const ansTok = [tok('Ans', 'Ans', 'var')];
+        state.rootSlot = [];
+        state.cursorSlot = state.rootSlot;
+        state.cursorIndex = 0;
+        state.evaluated = false;
+        state.displayFormatMode = 'DEFAULT';
+        return ansTok;
+      }
+      const extracted = [];
+      while (state.cursorIndex > 0) {
+        const prev = state.cursorSlot[state.cursorIndex - 1];
+        if (prev.type === 'token' && (prev.kind === 'digit' || prev.kind === 'var' || prev.text === '.')) {
+          extracted.unshift(prev);
+          state.cursorSlot.splice(state.cursorIndex - 1, 1);
+          state.cursorIndex--;
+        } else {
+          break;
+        }
+      }
+      return extracted;
+    }
+
+    function moveCursorLeft() {
+      if (state.engModeActive) {
+        state.engExponentOffset += 3;
+        return;
+      }
+      if (state.evaluated) {
+        state.evaluated = false;
+        state.displayFormatMode = 'DEFAULT';
+        state.cursorSlot = state.rootSlot;
+        state.cursorIndex = state.rootSlot.length;
+        return;
+      }
+      if (state.cursorIndex > 0) {
+        const prevItem = state.cursorSlot[state.cursorIndex - 1];
+        if (prevItem && prevItem.slots && prevItem.slots.length > 0) {
+          const lastSlot = prevItem.slots[prevItem.slots.length - 1];
+          state.cursorSlot = lastSlot;
+          state.cursorIndex = lastSlot.length;
+        } else {
+          state.cursorIndex--;
+        }
+      } else {
+        const ctx = findSlotContext(state.rootSlot, state.cursorSlot);
+        if (ctx && ctx.parentNode) {
+          if (ctx.slotIndex > 0) {
+            const prevSiblingSlot = ctx.parentNode.slots[ctx.slotIndex - 1];
+            state.cursorSlot = prevSiblingSlot;
+            state.cursorIndex = prevSiblingSlot.length;
+          } else {
+            state.cursorSlot = ctx.parentSlot;
+            state.cursorIndex = ctx.nodeIndex;
+          }
+        } else {
+          state.cursorSlot = state.rootSlot;
+          state.cursorIndex = state.rootSlot.length;
+        }
+      }
+    }
+
+    function moveCursorRight() {
+      if (state.engModeActive) {
+        state.engExponentOffset -= 3;
+        return;
+      }
+      if (state.evaluated) {
+        state.evaluated = false;
+        state.displayFormatMode = 'DEFAULT';
+        state.cursorSlot = state.rootSlot;
+        state.cursorIndex = 0;
+        return;
+      }
+      if (state.cursorIndex < state.cursorSlot.length) {
+        const nextItem = state.cursorSlot[state.cursorIndex];
+        if (nextItem && nextItem.slots && nextItem.slots.length > 0) {
+          state.cursorSlot = nextItem.slots[0];
+          state.cursorIndex = 0;
+        } else {
+          state.cursorIndex++;
+        }
+      } else {
+        const ctx = findSlotContext(state.rootSlot, state.cursorSlot);
+        if (ctx && ctx.parentNode) {
+          if (ctx.slotIndex + 1 < ctx.parentNode.slots.length) {
+            state.cursorSlot = ctx.parentNode.slots[ctx.slotIndex + 1];
+            state.cursorIndex = 0;
+          } else {
+            state.cursorSlot = ctx.parentSlot;
+            state.cursorIndex = ctx.nodeIndex + 1;
+          }
+        } else {
+          state.cursorSlot = state.rootSlot;
+          state.cursorIndex = 0;
+        }
+      }
+    }
+
+    function moveCursorUpDown(dir) {
+      const ctx = findSlotContext(state.rootSlot, state.cursorSlot);
+      if (ctx && ctx.parentNode) {
+        const p = ctx.parentNode;
+        if (p.type === 'frac') {
+          if (dir === 'DOWN' && ctx.slotIndex === 0) {
+            state.cursorSlot = p.slots[1];
+            state.cursorIndex = Math.min(state.cursorIndex, p.slots[1].length);
+            return;
+          }
+          if (dir === 'UP' && ctx.slotIndex === 1) {
+            state.cursorSlot = p.slots[0];
+            state.cursorIndex = Math.min(state.cursorIndex, p.slots[0].length);
+            return;
+          }
+        } else if (p.type === 'mixed') {
+          if (dir === 'DOWN' && ctx.slotIndex === 1) {
+            state.cursorSlot = p.slots[2];
+            state.cursorIndex = Math.min(state.cursorIndex, p.slots[2].length);
+            return;
+          }
+          if (dir === 'UP' && ctx.slotIndex === 2) {
+            state.cursorSlot = p.slots[1];
+            state.cursorIndex = Math.min(state.cursorIndex, p.slots[1].length);
+            return;
+          }
+        }
+      }
+      if (state.history.length > 0) {
+        if (dir === 'UP') {
+          if (state.historyIndex === -1) state.historyIndex = state.history.length - 1;
+          else if (state.historyIndex > 0) state.historyIndex--;
+        } else if (dir === 'DOWN') {
+          if (state.historyIndex !== -1 && state.historyIndex < state.history.length - 1) {
+            state.historyIndex++;
+          }
+        }
+        const entry = state.history[state.historyIndex];
+        if (entry) {
+          state.rootSlot = JSON.parse(entry.astJSON);
+          state.cursorSlot = state.rootSlot;
+          state.cursorIndex = state.rootSlot.length;
+          state.lastResultValue = entry.value;
+          state.evaluated = true;
+          state.displayFormatMode = 'DEFAULT';
+        }
+      }
+    }
+
+    function deleteAtCursor() {
+      saveUndoState();
+      if (state.evaluated) {
+        state.evaluated = false;
+        state.engModeActive = false;
+        state.displayFormatMode = 'DEFAULT';
+        state.cursorSlot = state.rootSlot;
+        state.cursorIndex = state.rootSlot.length;
+      }
+      if (state.cursorIndex > 0) {
+        const prev = state.cursorSlot[state.cursorIndex - 1];
+        if (prev.slots) {
+          const allEmpty = prev.slots.every(s => s.length === 0);
+          if (allEmpty) {
+            state.cursorSlot.splice(state.cursorIndex - 1, 1);
+            state.cursorIndex--;
+          } else {
+            const lastSlot = prev.slots[prev.slots.length - 1];
+            state.cursorSlot = lastSlot;
+            state.cursorIndex = lastSlot.length;
+          }
+        } else {
+          state.cursorSlot.splice(state.cursorIndex - 1, 1);
+          state.cursorIndex--;
+        }
+      } else {
+        const ctx = findSlotContext(state.rootSlot, state.cursorSlot);
+        if (ctx && ctx.parentNode) {
+          const allEmpty = ctx.parentNode.slots.every(s => s.length === 0);
+          if (allEmpty) {
+            ctx.parentSlot.splice(ctx.nodeIndex, 1);
+            state.cursorSlot = ctx.parentSlot;
+            state.cursorIndex = ctx.nodeIndex;
+          } else {
+            moveCursorLeft();
+          }
+        }
+      }
+    }
+
+    // --- 4-Gradation Natural Textbook Rendering ---
+    function renderSlotHTML(slot, showCursor) {
+      const isActiveSlot = showCursor && (slot === state.cursorSlot);
+      if (slot.length === 0) {
+        return isActiveSlot ? `<span class="m-box active-box"></span>` : `<span class="m-box"></span>`;
+      }
+      let html = '';
+      for (let i = 0; i <= slot.length; i++) {
+        if (isActiveSlot && i === state.cursorIndex) {
+          html += `<span class="m-cursor"></span>`;
+        }
+        if (i < slot.length) {
+          html += renderNodeHTML(slot[i], showCursor);
+        }
+      }
+      return html;
+    }
+
+    function renderNodeHTML(node, showCursor) {
+      const isMathIO = state.setup.ioMode.startsWith('MathI');
+      if (node.type === 'token') {
+        const escaped = node.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<span>${escaped}</span>`;
+      }
+      if (!isMathIO) {
+        if (node.type === 'frac') return `(${renderSlotHTML(node.slots[0], showCursor)}⌟${renderSlotHTML(node.slots[1], showCursor)})`;
+        if (node.type === 'mixed') return `(${renderSlotHTML(node.slots[0], showCursor)}⌟${renderSlotHTML(node.slots[1], showCursor)}⌟${renderSlotHTML(node.slots[2], showCursor)})`;
+      }
+      switch (node.type) {
+        case 'frac':
+          return `<span class="m-frac"><span class="m-frac-num">${renderSlotHTML(node.slots[0], showCursor)}</span><span class="m-frac-den">${renderSlotHTML(node.slots[1], showCursor)}</span></span>`;
+        case 'mixed':
+          return `<span class="m-mixed"><span>${renderSlotHTML(node.slots[0], showCursor)}</span><span class="m-frac"><span class="m-frac-num">${renderSlotHTML(node.slots[1], showCursor)}</span><span class="m-frac-den">${renderSlotHTML(node.slots[2], showCursor)}</span></span></span>`;
+        case 'sqrt':
+          return `<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">${renderSlotHTML(node.slots[0], showCursor)}</span></span>`;
+        case 'nthroot':
+          return `<span class="m-nthroot"><span class="m-nthroot-idx">${renderSlotHTML(node.slots[0], showCursor)}</span><span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">${renderSlotHTML(node.slots[1], showCursor)}</span></span></span>`;
+        case 'power':
+          return `<span class="m-sup">${renderSlotHTML(node.slots[0], showCursor)}</span>`;
+        case 'exp10':
+          return `<span class="m-expr">10<span class="m-sup">${renderSlotHTML(node.slots[0], showCursor)}</span></span>`;
+        case 'expe':
+          return `<span class="m-expr"><i>e</i><span class="m-sup">${renderSlotHTML(node.slots[0], showCursor)}</span></span>`;
+        case 'logab':
+          return `<span class="m-expr">log<span class="m-sub">${renderSlotHTML(node.slots[0], showCursor)}</span>(${renderSlotHTML(node.slots[1], showCursor)})</span>`;
+        case 'abs':
+          return `<span class="m-abs">${renderSlotHTML(node.slots[0], showCursor)}</span>`;
+        case 'rec':
+          return `<span class="m-rec">${renderSlotHTML(node.slots[0], showCursor)}</span>`;
+        default:
+          return '';
+      }
+    }
+
+    function slotToEvalString(slot) {
+      if (!slot || slot.length === 0) throw { type: 'Syntax ERROR' };
+      let out = '';
+      for (let i = 0; i < slot.length; i++) {
+        const cur = slot[i];
+        const prev = i > 0 ? slot[i - 1] : null;
+        if (prev) {
+          const prevIsValue = (
+            (prev.type === 'token' && (prev.kind === 'digit' || prev.kind === 'var' || prev.kind === 'const' || prev.text === ')' || prev.text === '²' || prev.text === '⁻¹' || prev.text === '!' || prev.text === '%')) ||
+            ['frac', 'mixed', 'sqrt', 'nthroot', 'power', 'exp10', 'expe', 'logab', 'abs', 'rec'].includes(prev.type)
+          );
+          const curStartsValue = (
+            (cur.type === 'token' && (cur.kind === 'var' || cur.kind === 'const' || cur.kind === 'fn' || cur.text === '(')) ||
+            ['frac', 'mixed', 'sqrt', 'nthroot', 'exp10', 'expe', 'logab', 'abs'].includes(cur.type)
+          );
+          if (prevIsValue && curStartsValue) out += '*';
+        }
+        if (cur.type === 'token') out += cur.evalStr;
+        else if (cur.type === 'frac') out += `((${slotToEvalString(cur.slots[0])})/(${slotToEvalString(cur.slots[1])}))`;
+        else if (cur.type === 'mixed') out += `((${slotToEvalString(cur.slots[0])})+((${slotToEvalString(cur.slots[1])})/(${slotToEvalString(cur.slots[2])})))`;
+        else if (cur.type === 'sqrt') out += `_sqrt(${slotToEvalString(cur.slots[0])})`;
+        else if (cur.type === 'nthroot') out += `_nthroot(${slotToEvalString(cur.slots[0])},${slotToEvalString(cur.slots[1])})`;
+        else if (cur.type === 'power') out += `**(${slotToEvalString(cur.slots[0])})`;
+        else if (cur.type === 'exp10') out += `(10**(${slotToEvalString(cur.slots[0])}))`;
+        else if (cur.type === 'expe') out += `Math.exp(${slotToEvalString(cur.slots[0])})`;
+        else if (cur.type === 'logab') out += `_logab(${slotToEvalString(cur.slots[0])},${slotToEvalString(cur.slots[1])})`;
+        else if (cur.type === 'abs') out += `Math.abs(${slotToEvalString(cur.slots[0])})`;
+        else if (cur.type === 'rec') {
+          const rStr = slotToEvalString(cur.slots[0]);
+          if (!/^\d+$/.test(rStr)) throw { type: 'Syntax ERROR' };
+          out += `((${parseInt(rStr, 10)}/${'9'.repeat(rStr.length)}))`;
+        }
+      }
+      return out;
+    }
+
+    function autoCloseParens(str) {
+      let open = 0;
+      for (const ch of str) {
+        if (ch === '(') open++;
+        else if (ch === ')') open--;
+      }
+      if (open < 0) throw { type: 'Syntax ERROR' };
+      return str + ')'.repeat(open);
+    }
+
+    function toRad(ang) {
+      if (state.setup.angleUnit === 'D') return (ang * Math.PI) / 180;
+      if (state.setup.angleUnit === 'G') return (ang * Math.PI) / 200;
+      return ang;
+    }
+    function fromRad(rad) {
+      if (state.setup.angleUnit === 'D') return (rad * 180) / Math.PI;
+      if (state.setup.angleUnit === 'G') return (rad * 200) / Math.PI;
+      return rad;
+    }
+
+    function compileUserFuncString(defStr) {
+      return defStr
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/−/g, '-')
+        .replace(/√\(/g, '_sqrt(')
+        .replace(/sin\(/g, '_sin(')
+        .replace(/cos\(/g, '_cos(')
+        .replace(/tan\(/g, '_tan(')
+        .replace(/²/g, '**2')
+        .replace(/³/g, '**3')
+        .replace(/\^/g, '**')
+        .replace(/(\d)([x(])/g, '$1*$2');
+    }
+
+    const MathEnv = {
+      _toRad: toRad,
+      _sin: (x) => { const v = Math.sin(toRad(x)); return Math.abs(v) < 1e-15 ? 0 : v; },
+      _cos: (x) => { const v = Math.cos(toRad(x)); return Math.abs(v) < 1e-15 ? 0 : v; },
+      _tan: (x) => {
+        if (state.setup.angleUnit === 'D' && Math.abs((x % 180 + 180) % 180 - 90) < 1e-12) throw { type: 'Math ERROR' };
+        const r = toRad(x);
+        if (Math.abs(Math.cos(r)) < 1e-15) throw { type: 'Math ERROR' };
+        return Math.tan(r);
+      },
+      _asin: (x) => { if (x < -1 || x > 1) throw { type: 'Math ERROR' }; return fromRad(Math.asin(x)); },
+      _acos: (x) => { if (x < -1 || x > 1) throw { type: 'Math ERROR' }; return fromRad(Math.acos(x)); },
+      _atan: (x) => fromRad(Math.atan(x)),
+      _sinh: (x) => Math.sinh(x),
+      _cosh: (x) => Math.cosh(x),
+      _tanh: (x) => Math.tanh(x),
+      _asinh: (x) => Math.asinh(x),
+      _acosh: (x) => { if (x < 1) throw { type: 'Math ERROR' }; return Math.acosh(x); },
+      _atanh: (x) => { if (x <= -1 || x >= 1) throw { type: 'Math ERROR' }; return Math.atanh(x); },
+      _log10: (x) => { if (x <= 0) throw { type: 'Math ERROR' }; return Math.log10(x); },
+      _ln: (x) => { if (x <= 0) throw { type: 'Math ERROR' }; return Math.log(x); },
+      _logab: (b, x) => {
+        if (x === undefined) {
+          // log(x) base 10 default
+          if (b <= 0) throw { type: 'Math ERROR' };
+          return Math.log10(b);
+        }
+        if (b <= 0 || b === 1 || x <= 0) throw { type: 'Math ERROR' };
+        return Math.log(x) / Math.log(b);
+      },
+      _sqrt: (x) => { if (x < 0) throw { type: 'Math ERROR' }; return Math.sqrt(x); },
+      _nthroot: (n, x) => {
+        if (n === 0) throw { type: 'Math ERROR' };
+        if (x < 0) {
+          if (Math.abs(n - Math.round(n)) < 1e-9 && Math.abs(Math.round(n)) % 2 === 1) return -Math.pow(-x, 1 / n);
+          throw { type: 'Math ERROR' };
+        }
+        return Math.pow(x, 1 / n);
+      },
+      _fact: (n) => {
+        if (n < 0 || Math.abs(n - Math.round(n)) > 1e-9 || n > 69) throw { type: 'Math ERROR' };
+        let r = 1;
+        for (let i = 2; i <= Math.round(n); i++) r *= i;
+        return r;
+      },
+      _nPr: (n, r) => {
+        if (n < 0 || r < 0 || r > n || Math.abs(n - Math.round(n)) > 1e-9 || Math.abs(r - Math.round(r)) > 1e-9) throw { type: 'Math ERROR' };
+        return MathEnv._fact(n) / MathEnv._fact(n - r);
+      },
+      _nCr: (n, r) => {
+        if (n < 0 || r < 0 || r > n || Math.abs(n - Math.round(n)) > 1e-9 || Math.abs(r - Math.round(r)) > 1e-9) throw { type: 'Math ERROR' };
+        return MathEnv._fact(n) / (MathEnv._fact(r) * MathEnv._fact(n - r));
+      },
+      _GCD: (a, b) => {
+        if (a === undefined || b === undefined || Math.abs(a - Math.round(a)) > 1e-9 || Math.abs(b - Math.round(b)) > 1e-9) throw { type: 'Argument ERROR' };
+        return gcd(a, b);
+      },
+      _LCM: (a, b) => {
+        if (a === undefined || b === undefined || Math.abs(a - Math.round(a)) > 1e-9 || Math.abs(b - Math.round(b)) > 1e-9) throw { type: 'Argument ERROR' };
+        return lcm(a, b);
+      },
+      _Pol: (x, y) => {
+        if (x === undefined || y === undefined) throw { type: 'Argument ERROR' };
+        const r = Number(Math.hypot(x, y).toPrecision(10));
+        const theta = Number(fromRad(Math.atan2(y, x)).toPrecision(10));
+        state.memories.x = r;
+        state.memories.y = theta;
+        state.lastSecondaryText = `r=${r}, θ=${theta}`;
+        return r;
+      },
+      _Rec: (r, theta) => {
+        if (r === undefined || theta === undefined) throw { type: 'Argument ERROR' };
+        const rad = toRad(theta);
+        const x = Number((r * Math.cos(rad)).toPrecision(10));
+        const y = Number((r * Math.sin(rad)).toPrecision(10));
+        state.memories.x = x;
+        state.memories.y = y;
+        state.lastSecondaryText = `x=${x}, y=${y}`;
+        return x;
+      },
+      _RanInt: (a, b) => {
+        if (a === undefined || b === undefined || Math.abs(a - Math.round(a)) > 1e-9 || Math.abs(b - Math.round(b)) > 1e-9 || a > b) throw { type: 'Argument ERROR' };
+        const min = Math.round(a), max = Math.round(b);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      },
+      _Rnd: (x) => {
+        if (state.setup.numberFormat === 'Fix') {
+          const f = Math.pow(10, state.setup.fixDigits);
+          return Math.round(x * f) / f;
+        }
+        return Number(x.toPrecision(10));
+      },
+      _f: (xVal, depth = 0) => {
+        if (depth > 3) throw { type: 'Circular ERROR' };
+        if (!state.fxDef.trim()) throw { type: 'Not Defined' };
+        const comp = compileUserFuncString(state.fxDef);
+        return evaluateCompiledString(comp, { ...state.memories, x: xVal }, depth + 1);
+      },
+      _g: (xVal, depth = 0) => {
+        if (depth > 3) throw { type: 'Circular ERROR' };
+        if (!state.gxDef.trim()) throw { type: 'Not Defined' };
+        const comp = compileUserFuncString(state.gxDef);
+        return evaluateCompiledString(comp, { ...state.memories, x: xVal }, depth + 1);
+      }
+    };
+
+    function evaluateCompiledString(rawExpr, customVars = null, depth = 0) {
+      let expr = autoCloseParens(rawExpr.trim());
+      if (!expr) throw { type: 'Syntax ERROR' };
+
+      expr = expr.replace(/(\d+)\.\(\((\d+)\/(\d+)\)\)/g, '($1+($2/$3))');
+      expr = expr.replace(/(\d+)\.(\d+)\(\((\d+)\/(\d+)\)\)/g, (_, intP, decP, rN, rD) => {
+        const scale = Math.pow(10, decP.length);
+        return `(${intP}+(${decP}/${scale})+((${rN}/${rD})/${scale}))`;
+      });
+
+      expr = expr.replace(/(\d+(?:\.\d+)?)°(\d+(?:\.\d+)?)°(\d+(?:\.\d+)?)°?/g, '(($1)+($2)/60+($3)/3600)');
+      expr = expr.replace(/(\d+(?:\.\d+)?)°(\d+(?:\.\d+)?)°/g, '(($1)+($2)/60)');
+      expr = expr.replace(/(\d+(?:\.\d+)?)°/g, '($1)');
+
+      expr = expr.replace(/(\d+(?:\.\d+)?|\([^()]+\)|[A-Fxyz]|Ans)!/g, '_fact($1)');
+      expr = expr.replace(/(\d+(?:\.\d+)?|\([^()]+\)|[A-Fxyz]|Ans)%/g, '(($1)/100)');
+      expr = expr.replace(/(\d+(?:\.\d+)?|\([^()]+\)|[A-Fxyz]|Ans)_nPr_(\d+(?:\.\d+)?|\([^()]+\)|[A-Fxyz]|Ans)/g, '_nPr($1,$2)');
+      expr = expr.replace(/(\d+(?:\.\d+)?|\([^()]+\)|[A-Fxyz]|Ans)_nCr_(\d+(?:\.\d+)?|\([^()]+\)|[A-Fxyz]|Ans)/g, '_nCr($1,$2)');
+      expr = expr.replace(/(^|[+\-*/,(])-(\d+(?:\.\d+)?)\*\*/g, '$1-($2)**');
+
+      // Pass depth to _f and _g
+      expr = expr.replace(/_f\(([^()]+)\)/g, `_f($1, ${depth})`);
+      expr = expr.replace(/_g\(([^()]+)\)/g, `_g($1, ${depth})`);
+
+      const vars = customVars || state.memories;
+      try {
+        const fn = new Function(
+          'env', 'vars',
+          `const {_toRad,_sin,_cos,_tan,_asin,_acos,_atan,_sinh,_cosh,_tanh,_asinh,_acosh,_atanh,_log10,_ln,_logab,_sqrt,_nthroot,_fact,_nPr,_nCr,_GCD,_LCM,_Pol,_Rec,_RanInt,_Rnd,_f,_g} = env;
+           const {Ans,A,B,C,D,E,F,x,y,z} = vars;
+           return (${expr});`
+        );
+        const val = fn(MathEnv, vars);
+        if (typeof val !== 'number' || Number.isNaN(val)) throw { type: 'Math ERROR' };
+        if (!Number.isFinite(val) || Math.abs(val) >= 1e100) throw { type: 'Math ERROR' };
+        return Number(val.toPrecision(12));
+      } catch (err) {
+        if (err && err.type) throw err;
+        throw { type: 'Syntax ERROR' };
+      }
+    }
+
+    function formatStandardNumber(val) {
+      if (Math.abs(val) < 1e-99) val = 0;
+      const decMark = state.setup.decimalMark;
+      const fmt = state.setup.numberFormat;
+
+      if (state.displayFormatMode === 'ENG' || state.engModeActive) {
+        if (val === 0) return `0×10<span class="m-sup">0</span> ◀▶`;
+        const baseExp = Math.floor(Math.log10(Math.abs(val)) / 3) * 3 + state.engExponentOffset;
+        const mant = Number((val / Math.pow(10, baseExp)).toPrecision(10));
+        return `${String(mant).replace('.', decMark)}×10<span class="m-sup">${baseExp}</span> ◀▶`;
+      }
+
+      if (fmt === 'Fix') return applyDigitSeparator(val.toFixed(state.setup.fixDigits), decMark);
+      if (fmt === 'Sci') {
+        const sig = Math.max(1, state.setup.sciDigits);
+        if (val === 0) return `0.${'0'.repeat(Math.max(0, sig - 1))}×10<span class="m-sup">0</span>`;
+        const exp = Math.floor(Math.log10(Math.abs(val)));
+        const mant = (val / Math.pow(10, exp)).toFixed(sig - 1);
+        return `${mant.replace('.', decMark)}×10<span class="m-sup">${exp}</span>`;
+      }
+
+      const absVal = Math.abs(val);
+      const lowThreshold = fmt === 'Norm1' ? 1e-2 : 1e-9;
+      if (absVal > 0 && (absVal >= 1e10 || absVal < lowThreshold)) {
+        const exp = Math.floor(Math.log10(absVal));
+        const mant = Number((val / Math.pow(10, exp)).toPrecision(10));
+        return `${String(mant).replace('.', decMark)}×10<span class="m-sup">${exp}</span>`;
+      }
+
+      return applyDigitSeparator(String(Number(val.toPrecision(10))), decMark);
+    }
+
+    function applyDigitSeparator(numStr, decMark) {
+      const neg = numStr.startsWith('-') ? '−' : '';
+      const clean = numStr.replace(/^-/, '');
+      const parts = clean.split('.');
+      let intPart = parts[0];
+      if (state.setup.digitSeparator) {
+        intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+      return parts.length > 1 ? `${neg}${intPart}${decMark}${parts[1]}` : `${neg}${intPart}`;
+    }
+
+    function renderFractionResultHTML(n, d, forceMixed = false) {
+      const sign = n < 0 ? '−' : '';
+      const absN = Math.abs(n);
+      const isMathO = state.setup.ioMode === 'MathI/MathO';
+      if (forceMixed && absN > d) {
+        const whole = Math.floor(absN / d);
+        const rem = absN % d;
+        if (rem === 0) return `${sign}${whole}`;
+        if (!isMathO) return `${sign}${whole}⌟${rem}⌟${d}`;
+        return `${sign}<span class="m-mixed"><span>${whole}</span><span class="m-frac"><span class="m-frac-num">${rem}</span><span class="m-frac-den">${d}</span></span></span>`;
+      }
+      if (!isMathO) return `${sign}${absN}⌟${d}`;
+      return `${sign}<span class="m-frac"><span class="m-frac-num">${absN}</span><span class="m-frac-den">${d}</span></span>`;
+    }
+
+    function formatResultHTML(val) {
+      if (state.lastSecondaryText && state.displayFormatMode === 'DEFAULT') {
+        return `<span class="text-sm">${state.lastSecondaryText}</span>`;
+      }
+      const isExactOutput = state.setup.ioMode === 'MathI/MathO';
+
+      if (state.displayFormatMode === 'FACT') {
+        const factors = primeFactorize(val);
+        if (factors) return factors.map(f => f.exp > 1 ? `${f.p}<span class="m-sup">${f.exp}</span>` : `${f.p}`).join('×');
+      }
+      if (state.displayFormatMode === 'DMS') return toDMSString(val);
+      if (state.displayFormatMode === 'DECIMAL' || state.displayFormatMode === 'ENG' || state.engModeActive) {
+        return formatStandardNumber(val);
+      }
+      if (state.displayFormatMode === 'FRAC_IMPROPER') {
+        const f = toFraction(val);
+        if (f && f.d > 1) return renderFractionResultHTML(f.n, f.d, false);
+      }
+      if (state.displayFormatMode === 'FRAC_MIXED') {
+        const f = toFraction(val);
+        if (f && f.d > 1) return renderFractionResultHTML(f.n, f.d, true);
+      }
+      if (state.displayFormatMode === 'RECURRING') {
+        const f = toFraction(val);
+        if (f && f.d > 1) {
+          const rec = getRecurringDecimalHTML(f.n, f.d, state.setup.decimalMark);
+          if (rec) return rec;
+        }
+      }
+
+      if (isExactOutput) {
+        const frac = toFraction(val, 9999);
+        if (frac && frac.d > 1 && String(Math.abs(frac.n)).length + String(frac.d).length <= 9) {
+          return renderFractionResultHTML(frac.n, frac.d, state.setup.fracResult === 'ab/c');
+        }
+        const piMult = toPiMultiple(val);
+        if (piMult) {
+          const sign = piMult.n < 0 ? '−' : '';
+          const absN = Math.abs(piMult.n);
+          const numStr = absN === 1 ? 'π' : `${absN}π`;
+          if (piMult.d === 1) return `${sign}${numStr}`;
+          return `${sign}<span class="m-frac"><span class="m-frac-num">${numStr}</span><span class="m-frac-den">${piMult.d}</span></span>`;
+        }
+        const surd = toExactSurd(val);
+        if (surd) {
+          const absA = Math.abs(surd.a);
+          const coeffStr = absA === 1 ? '' : String(absA);
+          const radPart = `${coeffStr}<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">${surd.b}</span></span>`;
+          const numHtml = surd.p === 0
+            ? `${surd.a < 0 ? '−' : ''}${radPart}`
+            : `${surd.p < 0 ? '−' + Math.abs(surd.p) : surd.p}${surd.a < 0 ? '−' : '+'}${radPart}`;
+          if (surd.c === 1) return numHtml;
+          return `<span class="m-frac"><span class="m-frac-num">${numHtml}</span><span class="m-frac-den">${surd.c}</span></span>`;
+        }
+      }
+
+      return formatStandardNumber(val);
+    }
+
+    function executeCalculation(forceDecimal = false) {
+      if (state.rootSlot.length === 0) return;
+      try {
+        state.lastSecondaryText = '';
+        state.engModeActive = false;
+        const compiled = slotToEvalString(state.rootSlot);
+        const val = evaluateCompiledString(compiled);
+        state.lastResultValue = val;
+        state.memories.Ans = val;
+        state.evaluated = true;
+        state.engExponentOffset = 0;
+        state.displayFormatMode = forceDecimal ? 'DECIMAL' : 'DEFAULT';
+        if (compiled.includes('°') && !forceDecimal) state.displayFormatMode = 'DMS';
+
+        const astJSON = JSON.stringify(state.rootSlot);
+        const exprHTML = renderSlotHTML(state.rootSlot, false);
+        const resHTML = formatResultHTML(val);
+        state.history.push({ astJSON, exprHTML, resHTML, value: val });
+        if (state.history.length > 30) state.history.shift();
+        state.historyIndex = state.history.length - 1;
+      } catch (err) {
+        pushMenu('ERROR', (err && err.type) ? err.type : 'Syntax ERROR', []);
+      }
+    }
+
+    // --- CW Menus Construction (FORMAT, CATALOG, TOOLS, SETTINGS, VARIABLE, FUNCTION) ---
+    function openFormatMenu() {
+      if (!state.evaluated && state.rootSlot.length > 0) {
+        executeCalculation(false);
+      }
+      if (!state.evaluated) return;
+      pushMenu('FORMAT', 'FORMAT Menu', [
+        { label: 'Standard', action: () => { state.displayFormatMode = 'DEFAULT'; state.engModeActive = false; clearMenus(); } },
+        { label: 'Decimal', action: () => { state.displayFormatMode = 'DECIMAL'; state.engModeActive = false; clearMenus(); } },
+        { label: 'Prime Factor', action: () => { state.displayFormatMode = 'FACT'; state.engModeActive = false; clearMenus(); } },
+        { label: 'Recurring Decimal', action: () => { state.displayFormatMode = 'RECURRING'; state.engModeActive = false; clearMenus(); } },
+        { label: 'Improper Fraction', action: () => { state.displayFormatMode = 'FRAC_IMPROPER'; state.engModeActive = false; clearMenus(); } },
+        { label: 'Mixed Fraction', action: () => { state.displayFormatMode = 'FRAC_MIXED'; state.engModeActive = false; clearMenus(); } },
+        { label: 'ENG Notation', action: () => { state.displayFormatMode = 'ENG'; state.engModeActive = true; state.engExponentOffset = 0; clearMenus(); } },
+        { label: 'Sexagesimal', action: () => { state.displayFormatMode = 'DMS'; state.engModeActive = false; clearMenus(); } }
+      ], 0);
+    }
+
+    function openCatalogMenu() {
+      pushMenu('CATALOG', 'CATALOG', [
+        {
+          label: 'Func Analysis ▸',
+          action: () => pushMenu('CAT_FUNC', 'Func Analysis', [
+            { label: 'Logarithm(logab)', action: () => { clearMenus(); insertNodeAtCursor({ type: 'logab', slots: [createSlot(), createSlot()] }); } },
+            { label: 'Logarithm(log)', action: () => { clearMenus(); insertNodeAtCursor(tok('log(', '_logab(', 'fn')); } },
+            { label: 'Natural Logarithm', action: () => { clearMenus(); insertNodeAtCursor(tok('ln(', '_ln(', 'fn')); } }
+          ])
+        },
+        {
+          label: 'Probability ▸',
+          action: () => pushMenu('CAT_PROB', 'Probability', [
+            { label: '%', action: () => { clearMenus(); insertNodeAtCursor(tok('%', '%', 'post')); } },
+            { label: 'Factorial(!)', action: () => { clearMenus(); insertNodeAtCursor(tok('!', '!', 'post')); } },
+            { label: 'Permutation(P)', action: () => { clearMenus(); insertNodeAtCursor(tok('P', '_nPr_', 'op')); } },
+            { label: 'Combination(C)', action: () => { clearMenus(); insertNodeAtCursor(tok('C', '_nCr_', 'op')); } },
+            { label: 'Random Number', action: () => { clearMenus(); const r = Math.floor(Math.random() * 1000) / 1000; insertNodeAtCursor(tok('Ran#', String(r), 'const')); } },
+            { label: 'Random Integer', action: () => { clearMenus(); insertNodeAtCursor(tok('RanInt#(', '_RanInt(', 'fn')); } }
+          ])
+        },
+        {
+          label: 'Numeric Calc ▸',
+          action: () => pushMenu('CAT_NUM', 'Numeric Calc', [
+            { label: 'GCD', action: () => { clearMenus(); insertNodeAtCursor(tok('GCD(', '_GCD(', 'fn')); } },
+            { label: 'LCM', action: () => { clearMenus(); insertNodeAtCursor(tok('LCM(', '_LCM(', 'fn')); } },
+            { label: 'Absolute Value', action: () => { clearMenus(); insertNodeAtCursor({ type: 'abs', slots: [createSlot()] }); } },
+            { label: 'Recurring Decimal', action: () => { clearMenus(); insertNodeAtCursor({ type: 'rec', slots: [createSlot()] }); } },
+            { label: 'Round Off (Rnd)', action: () => { clearMenus(); insertNodeAtCursor(tok('Rnd(', '_Rnd(', 'fn')); } }
+          ])
+        },
+        {
+          label: 'Angle/Coord/Sexa ▸',
+          action: () => pushMenu('CAT_ANG', 'Angle/Coord/Sexa', [
+            { label: 'Degrees (°)', action: () => { clearMenus(); insertNodeAtCursor(tok('°', '*(Math.PI/180)/_toRad(1)', 'atom')); } },
+            { label: 'Radians (ʳ)', action: () => { clearMenus(); insertNodeAtCursor(tok('ʳ', '*(1)/_toRad(1)', 'atom')); } },
+            { label: 'Gradians (ᵍ)', action: () => { clearMenus(); insertNodeAtCursor(tok('ᵍ', '*(Math.PI/200)/_toRad(1)', 'atom')); } },
+            { label: 'Rect to Polar Pol(', action: () => { clearMenus(); insertNodeAtCursor(tok('Pol(', '_Pol(', 'fn')); } },
+            { label: 'Polar to Rect Rec(', action: () => { clearMenus(); insertNodeAtCursor(tok('Rec(', '_Rec(', 'fn')); } },
+            { label: 'Degs Mins Secs (°’”)', action: () => { clearMenus(); insertNodeAtCursor(tok('°', '°', 'atom')); } }
+          ])
+        },
+        {
+          label: 'Hyperbolic/Trig ▸',
+          action: () => pushMenu('CAT_HYP', 'Hyperbolic/Trig', [
+            { label: 'sinh', action: () => { clearMenus(); insertNodeAtCursor(tok('sinh(', '_sinh(', 'fn')); } },
+            { label: 'cosh', action: () => { clearMenus(); insertNodeAtCursor(tok('cosh(', '_cosh(', 'fn')); } },
+            { label: 'tanh', action: () => { clearMenus(); insertNodeAtCursor(tok('tanh(', '_tanh(', 'fn')); } },
+            { label: 'sinh⁻¹', action: () => { clearMenus(); insertNodeAtCursor(tok('sinh⁻¹(', '_asinh(', 'fn')); } },
+            { label: 'cosh⁻¹', action: () => { clearMenus(); insertNodeAtCursor(tok('cosh⁻¹(', '_acosh(', 'fn')); } },
+            { label: 'tanh⁻¹', action: () => { clearMenus(); insertNodeAtCursor(tok('tanh⁻¹(', '_atanh(', 'fn')); } }
+          ])
+        },
+        {
+          label: 'Other ▸',
+          action: () => pushMenu('CAT_OTHER', 'Other', [
+            { label: 'Ans', action: () => { clearMenus(); insertNodeAtCursor(tok('Ans', 'Ans', 'var')); } },
+            { label: 'π', action: () => { clearMenus(); insertNodeAtCursor(tok('π', 'Math.PI', 'const')); } },
+            { label: 'e', action: () => { clearMenus(); insertNodeAtCursor(tok('e', 'Math.E', 'const')); } }
+          ])
+        }
+      ]);
+    }
+
+    function openSettingsMenu() {
+      pushMenu('SETTINGS', 'SETTINGS', [
+        {
+          label: 'Calc Settings ▸',
+          action: () => pushMenu('SET_CALC', 'Calc Settings', [
+            {
+              label: 'Input/Output ▸',
+              action: () => pushMenu('SET_IO', 'Input/Output', [
+                { label: `${state.setup.ioMode === 'MathI/MathO' ? '●' : '○'} MathI/MathO`, action: () => { state.setup.ioMode = 'MathI/MathO'; popMenu(); } },
+                { label: `${state.setup.ioMode === 'MathI/DecimalO' ? '●' : '○'} MathI/DecimalO`, action: () => { state.setup.ioMode = 'MathI/DecimalO'; popMenu(); } },
+                { label: `${state.setup.ioMode === 'LineI/LineO' ? '●' : '○'} LineI/LineO`, action: () => { state.setup.ioMode = 'LineI/LineO'; popMenu(); } },
+                { label: `${state.setup.ioMode === 'LineI/DecimalO' ? '●' : '○'} LineI/DecimalO`, action: () => { state.setup.ioMode = 'LineI/DecimalO'; popMenu(); } }
+              ])
+            },
+            {
+              label: 'Angle Unit ▸',
+              action: () => pushMenu('SET_ANG', 'Angle Unit', [
+                { label: `${state.setup.angleUnit === 'D' ? '●' : '○'} Degree`, action: () => { state.setup.angleUnit = 'D'; clearMenus(); } },
+                { label: `${state.setup.angleUnit === 'R' ? '●' : '○'} Radian`, action: () => { state.setup.angleUnit = 'R'; clearMenus(); } },
+                { label: `${state.setup.angleUnit === 'G' ? '●' : '○'} Gradian`, action: () => { state.setup.angleUnit = 'G'; clearMenus(); } }
+              ])
+            },
+            {
+              label: 'Number Format ▸',
+              action: () => pushMenu('SET_FMT', 'Number Format', [
+                { label: 'Fix (3 digits)', action: () => { state.setup.numberFormat = 'Fix'; state.setup.fixDigits = 3; clearMenus(); } },
+                { label: 'Sci (3 sig figs)', action: () => { state.setup.numberFormat = 'Sci'; state.setup.sciDigits = 3; clearMenus(); } },
+                { label: 'Norm 1', action: () => { state.setup.numberFormat = 'Norm1'; clearMenus(); } },
+                { label: 'Norm 2', action: () => { state.setup.numberFormat = 'Norm2'; clearMenus(); } }
+              ])
+            },
+            {
+              label: 'Fraction Result ▸',
+              action: () => pushMenu('SET_FRAC', 'Fraction Result', [
+                { label: `${state.setup.fracResult === 'ab/c' ? '●' : '○'} Mixed Fraction`, action: () => { state.setup.fracResult = 'ab/c'; clearMenus(); } },
+                { label: `${state.setup.fracResult === 'd/c' ? '●' : '○'} Improp Fraction`, action: () => { state.setup.fracResult = 'd/c'; clearMenus(); } }
+              ])
+            },
+            {
+              label: 'Digit Separator ▸',
+              action: () => pushMenu('SET_SEP', 'Digit Separator', [
+                { label: `${state.setup.digitSeparator ? '●' : '○'} On`, action: () => { state.setup.digitSeparator = true; clearMenus(); } },
+                { label: `${!state.setup.digitSeparator ? '●' : '○'} Off`, action: () => { state.setup.digitSeparator = false; clearMenus(); } }
+              ])
+            }
+          ])
+        },
+        {
+          label: 'System Settings ▸',
+          action: () => pushMenu('SET_SYS', 'System Settings', [
+            { label: 'Contrast (+1)', action: () => { state.setup.contrast = Math.min(10, state.setup.contrast + 1); } },
+            { label: 'Contrast (-1)', action: () => { state.setup.contrast = Math.max(1, state.setup.contrast - 1); } }
+          ])
+        },
+        {
+          label: 'Reset ▸',
+          action: () => pushMenu('SET_RESET', 'Reset', [
+            { label: 'Settings & Data', action: () => { state.setup.ioMode = 'MathI/MathO'; state.setup.angleUnit = 'D'; state.setup.numberFormat = 'Norm2'; clearMenus(); } },
+            { label: 'Variable Memory', action: () => { for (const k of Object.keys(state.memories)) state.memories[k] = 0; clearMenus(); } },
+            { label: 'Initialize All', action: () => { for (const k of Object.keys(state.memories)) state.memories[k] = 0; state.rootSlot = []; state.cursorSlot = state.rootSlot; state.evaluated = false; clearMenus(); } }
+          ])
+        },
+        {
+          label: 'Get Started (QR)',
+          action: () => pushMenu('QR_SCREEN', 'wes.casio.com/calc/cw', [])
+        }
+      ]);
+    }
+
+    function openFunctionMenu() {
+      pushMenu('FUNCTION_MENU', 'Function f(x)/g(x)', [
+        { label: 'f(x)', action: () => { clearMenus(); insertNodeAtCursor(tok('f(', '_f(', 'fn')); } },
+        { label: 'g(x)', action: () => { clearMenus(); insertNodeAtCursor(tok('g(', '_g(', 'fn')); } },
+        { label: `Define f(x) [${state.fxDef}]`, action: () => { clearMenus(); state.definingFuncTarget = 'f'; state.definingFuncBuf = state.fxDef; pushMenu('DEF_FUNC', 'Define f(x)=', []); } },
+        { label: `Define g(x) [${state.gxDef}]`, action: () => { clearMenus(); state.definingFuncTarget = 'g'; state.definingFuncBuf = state.gxDef; pushMenu('DEF_FUNC', 'Define g(x)=', []); } }
+      ]);
+    }
+
+    function openToolsMenu() {
+      if (state.app === 'Table') {
+        pushMenu('TOOLS_TABLE', 'TOOLS (Table)', [
+          { label: 'Table Range', action: () => { clearMenus(); state.tableScreen = 'RANGE'; state.tableRangeField = 0; state.tableRangeBuf = ''; } },
+          { label: 'Define f(x)/g(x)', action: () => { popMenu(); openFunctionMenu(); } },
+          { label: `Table Type (${state.setup.tableType})`, action: () => { state.setup.tableType = state.setup.tableType === 'f(x)/g(x)' ? 'f(x)' : 'f(x)/g(x)'; clearMenus(); generateTableRows(); } }
+        ]);
+        return;
+      }
+      if (state.app === 'Statistics') {
+        pushMenu('TOOLS_STAT', 'TOOLS (Statistics)', [
+          { label: `Frequency (${state.setup.statFreq ? 'On' : 'Off'})`, action: () => { state.setup.statFreq = !state.setup.statFreq; clearMenus(); } },
+          { label: 'Sort x Ascending', action: () => { state.statData.sort((a, b) => a.x - b.x); clearMenus(); } },
+          { label: 'Delete All', action: () => { state.statData = [{ x: 0, y: 0, freq: 1 }]; state.statRow = 0; clearMenus(); } }
+        ]);
+        return;
+      }
+      pushMenu('TOOLS_CALC', 'TOOLS', [
+        {
+          label: 'Undo',
+          action: () => {
+            if (state.undoSnapshot) {
+              const snap = JSON.parse(state.undoSnapshot);
+              state.rootSlot = snap.rootSlot;
+              state.cursorSlot = state.rootSlot;
+              state.cursorIndex = state.rootSlot.length;
+              state.evaluated = false;
+            }
+            clearMenus();
+          }
+        }
+      ]);
+    }
+
+    function openVariableSheet() {
+      pushMenu('VAR_SHEET', 'VARIABLE (A–F, x, y, z)', []);
+    }
+
+    // --- Main Key Dispatcher ---
+    function handleKey(key) {
+      if (key === 'ON') {
+        state.powerOn = true;
+        clearMenus();
+        state.shift = false;
+        state.rootSlot = [];
+        state.cursorSlot = state.rootSlot;
+        state.cursorIndex = 0;
+        state.evaluated = false;
+        logKeystroke('ON');
+        renderAll();
+        return;
+      }
+      if (!state.powerOn) return;
+
+      if (key.startsWith('QUICK_')) {
+        const map = { QUICK_CALC: 'Calculate', QUICK_STAT: 'Statistics', QUICK_TABLE: 'Table', QUICK_RATIO: 'Ratio', QUICK_MATHBOX: 'MathBox' };
+        launchApp(map[key] || 'Calculate');
+        logKeystroke(key);
+        renderAll();
+        return;
+      }
+
+      logKeystroke(key);
+      checkTrainingDrillStep(key);
+
+      if (key === 'SHIFT') {
+        state.shift = !state.shift;
+        renderAll();
+        return;
+      }
+      const wasShift = state.shift;
+      state.shift = false;
+
+      if (wasShift && key === 'AC') {
+        state.powerOn = false;
+        clearMenus();
+        renderAll();
+        return;
+      }
+
+      if (wasShift && key === 'VAR_X') {
+        pushMenu('QR_SCREEN', 'QR Code (ClassPad Graph)', []);
+        renderAll();
+        return;
+      }
+
+      if (key === 'HOME') {
+        clearMenus();
+        const apps = ['Calculate', 'Statistics', 'Table', 'Ratio', 'MathBox'];
+        state.homeIdx = Math.max(0, apps.indexOf(state.app));
+        pushMenu('HOME', 'HOME', []);
+        renderAll();
+        return;
+      }
+
+      if (key === 'SETTINGS') {
+        openSettingsMenu();
+        renderAll();
+        return;
+      }
+
+      if (key === 'CATALOG') {
+        openCatalogMenu();
+        renderAll();
+        return;
+      }
+
+      if (key === 'TOOLS') {
+        openToolsMenu();
+        renderAll();
+        return;
+      }
+
+      if (key === 'VARIABLE') {
+        openVariableSheet();
+        renderAll();
+        return;
+      }
+
+      if (key === 'FUNCTION') {
+        openFunctionMenu();
+        renderAll();
+        return;
+      }
+
+      if (key === 'FORMAT') {
+        if (wasShift) {
+          clearMenus();
+          insertNodeAtCursor(tok('Ans', 'Ans', 'var'));
+        } else {
+          openFormatMenu();
+        }
+        renderAll();
+        return;
+      }
+
+      // If any Menu/Overlay is on the stack, delegate to Menu Stack Handler
+      if (state.menuStack.length > 0) {
+        handleMenuStackKey(key, wasShift);
+        renderAll();
+        return;
+      }
+
+      // Delegate to active App
+      if (state.app === 'Calculate') {
+        handleCalculateAppKey(key, wasShift);
+      } else if (state.app === 'Statistics') {
+        handleStatisticsAppKey(key, wasShift);
+      } else if (state.app === 'Table') {
+        handleTableAppKey(key, wasShift);
+      } else if (state.app === 'Ratio') {
+        handleRatioAppKey(key, wasShift);
+      } else if (state.app === 'MathBox') {
+        handleMathBoxAppKey(key, wasShift);
+      }
+      renderAll();
+    }
+
+    function launchApp(appName) {
+      state.app = appName;
+      clearMenus();
+      if (appName === 'Table') {
+        generateTableRows();
+        state.tableScreen = 'VIEW';
+      } else if (appName === 'Statistics') {
+        pushMenu('STAT_SELECT', 'Statistics', [
+          { label: '1-Variable', action: () => { state.statMode = '1-VAR'; state.statScreen = 'EDITOR'; clearMenus(); } },
+          { label: '2-Variable (Linear/Reg)', action: () => { state.statMode = '2-VAR'; state.statScreen = 'EDITOR'; clearMenus(); } }
+        ]);
+      } else if (appName === 'Ratio') {
+        pushMenu('RATIO_SELECT', 'Ratio', [
+          { label: 'A : B = X : D', action: () => { state.ratioType = 1; state.ratioResult = null; clearMenus(); } },
+          { label: 'A : B = C : X', action: () => { state.ratioType = 2; state.ratioResult = null; clearMenus(); } }
+        ]);
+      } else if (appName === 'MathBox') {
+        state.mathBoxTool = 'MENU';
+      }
+    }
+
+    // --- Menu Stack Handler ---
+    function handleMenuStackKey(key, wasShift) {
+      const top = topMenu();
+      if (!top) return;
+
+      if (top.id === 'ERROR') {
+        if (key === 'AC' || key === 'OK' || key === 'EXE' || key === 'BACK' || key === 'LEFT' || key === 'RIGHT') {
+          popMenu();
+          state.evaluated = false;
+        }
+        return;
+      }
+
+      if (top.id === 'QR_SCREEN') {
+        if (key === 'BACK' || key === 'AC' || key === 'OK' || key === 'EXE') popMenu();
+        return;
+      }
+
+      if (top.id === 'HOME') {
+        if (key === 'LEFT') state.homeIdx = (state.homeIdx + 4) % 5;
+        else if (key === 'RIGHT') state.homeIdx = (state.homeIdx + 1) % 5;
+        else if (key === 'DOWN') state.homeIdx = Math.min(4, state.homeIdx + 3);
+        else if (key === 'UP') state.homeIdx = Math.max(0, state.homeIdx - 3);
+        else if (key === 'OK' || key === 'EXE') {
+          const apps = ['Calculate', 'Statistics', 'Table', 'Ratio', 'MathBox'];
+          launchApp(apps[state.homeIdx]);
+        } else if (key === 'BACK' || key === 'AC') {
+          popMenu();
+        }
+        return;
+      }
+
+      if (top.id === 'DEF_FUNC') {
+        if (key === 'BACK' || key === 'AC') { popMenu(); return; }
+        if (key === 'DEL') { state.definingFuncBuf = state.definingFuncBuf.slice(0, -1); return; }
+        if (/^[0-9]$/.test(key)) state.definingFuncBuf += key;
+        else if (key === 'VAR_X') state.definingFuncBuf += 'x';
+        else if (key === 'ADD') state.definingFuncBuf += '+';
+        else if (key === 'SUB' || key === 'NEG') state.definingFuncBuf += '−';
+        else if (key === 'MUL') state.definingFuncBuf += '×';
+        else if (key === 'DIV') state.definingFuncBuf += '÷';
+        else if (key === 'SQ') state.definingFuncBuf += '²';
+        else if (key === 'POW') state.definingFuncBuf += '^';
+        else if (key === 'SQRT') state.definingFuncBuf += '√(';
+        else if (key === 'LPAREN') state.definingFuncBuf += '(';
+        else if (key === 'RPAREN') state.definingFuncBuf += ')';
+        else if (key === 'OK' || key === 'EXE') {
+          if (state.definingFuncTarget === 'f') state.fxDef = state.definingFuncBuf || 'x';
+          else state.gxDef = state.definingFuncBuf || 'x';
+          clearMenus();
+          if (state.app === 'Table') generateTableRows();
+        }
+        return;
+      }
+
+      if (top.id === 'VAR_SHEET') {
+        const varNames = ['A', 'B', 'C', 'D', 'E', 'F', 'x', 'y', 'z'];
+        if (key === 'BACK' || key === 'AC') { popMenu(); return; }
+        if (key === 'DOWN') state.varCursorIdx = (state.varCursorIdx + 1) % 9;
+        else if (key === 'UP') state.varCursorIdx = (state.varCursorIdx + 8) % 9;
+        else if (key === 'LEFT' || key === 'RIGHT') state.varCursorIdx = (state.varCursorIdx + 3) % 9;
+        else if (key === 'OK' || key === 'EXE') {
+          const vName = varNames[state.varCursorIdx];
+          pushMenu('VAR_ACTION', `Variable ${vName}`, [
+            {
+              label: 'Store (Ans → ' + vName + ')',
+              action: () => {
+                if (!state.evaluated && state.rootSlot.length > 0) executeCalculation(false);
+                state.memories[vName] = state.lastResultValue;
+                clearMenus();
+              }
+            },
+            {
+              label: 'Recall (Insert ' + vName + ')',
+              action: () => {
+                clearMenus();
+                insertNodeAtCursor(tok(vName, vName, 'var'));
+              }
+            },
+            {
+              label: 'Edit Value',
+              action: () => {
+                state.varEditTarget = vName;
+                state.varEditBuf = '';
+                pushMenu('VAR_EDIT_INPUT', `${vName} =`, []);
+              }
+            }
+          ]);
+        }
+        return;
+      }
+
+      if (top.id === 'VAR_EDIT_INPUT') {
+        if (key === 'BACK' || key === 'AC') { popMenu(); return; }
+        if (/^[0-9]$/.test(key)) state.varEditBuf += key;
+        else if (key === 'DOT') state.varEditBuf += '.';
+        else if (key === 'NEG' || key === 'SUB') {
+          state.varEditBuf = state.varEditBuf.startsWith('-') ? state.varEditBuf.slice(1) : '-' + state.varEditBuf;
+        } else if (key === 'DEL') state.varEditBuf = state.varEditBuf.slice(0, -1);
+        else if (key === 'OK' || key === 'EXE') {
+          const parsed = parseFloat(state.varEditBuf);
+          if (Number.isFinite(parsed)) state.memories[state.varEditTarget] = parsed;
+          popMenu();
+          popMenu();
+        }
+        return;
+      }
+
+      // Generic List Menu Navigation
+      if (key === 'BACK' || key === 'LEFT') {
+        popMenu();
+        return;
+      }
+      if (key === 'AC') {
+        clearMenus();
+        return;
+      }
+      if (key === 'DOWN' || key === 'PGDN') {
+        top.selectedIdx = (top.selectedIdx + 1) % top.items.length;
+        return;
+      }
+      if (key === 'UP' || key === 'PGUP') {
+        top.selectedIdx = (top.selectedIdx + top.items.length - 1) % top.items.length;
+        return;
+      }
+      if (key === 'OK' || key === 'EXE' || key === 'RIGHT') {
+        const chosen = top.items[top.selectedIdx];
+        if (chosen && chosen.action) chosen.action();
+      }
+    }
+
+    // --- Calculate App Key Handler ---
+    function handleCalculateAppKey(key, wasShift) {
+      if (key === 'LEFT') { moveCursorLeft(); return; }
+      if (key === 'RIGHT') { moveCursorRight(); return; }
+      if (key === 'UP' || key === 'PGUP') { moveCursorUpDown('UP'); return; }
+      if (key === 'DOWN' || key === 'PGDN') { moveCursorUpDown('DOWN'); return; }
+      if (key === 'BACK') {
+        if (state.engModeActive) { state.engModeActive = false; state.displayFormatMode = 'DEFAULT'; }
+        else if (state.evaluated) { state.evaluated = false; state.displayFormatMode = 'DEFAULT'; }
+        return;
+      }
+
+      if (key === 'AC') {
+        saveUndoState();
+        state.rootSlot = [];
+        state.cursorSlot = state.rootSlot;
+        state.cursorIndex = 0;
+        state.evaluated = false;
+        state.engModeActive = false;
+        state.lastSecondaryText = '';
+        state.displayFormatMode = 'DEFAULT';
+        return;
+      }
+      if (key === 'DEL') {
+        if (wasShift) state.insertMode = !state.insertMode;
+        else deleteAtCursor();
+        return;
+      }
+
+      // Dedicated x key on CW
+      if (key === 'VAR_X') {
+        insertNodeAtCursor(tok('x', 'x', 'var'));
+        return;
+      }
+
+      // Digits 0-9 (with SHIFT+7 = π, SHIFT+8 = e on CW!)
+      if (/^[0-9]$/.test(key)) {
+        if (wasShift && key === '7') {
+          insertNodeAtCursor(tok('π', 'Math.PI', 'const'));
+          return;
+        }
+        if (wasShift && key === '8') {
+          insertNodeAtCursor(tok('e', 'Math.E', 'const'));
+          return;
+        }
+        insertNodeAtCursor(tok(key, key, 'digit'));
+        return;
+      }
+
+      if (key === 'DOT') {
+        insertNodeAtCursor(tok('.', '.', 'digit'));
+        return;
+      }
+
+      if (key === 'ADD') { insertNodeAtCursor(tok('+', '+', 'op')); return; }
+      if (key === 'SUB') { insertNodeAtCursor(tok('−', '-', 'op')); return; }
+      if (key === 'MUL') { insertNodeAtCursor(tok('×', '*', 'op')); return; }
+      if (key === 'DIV') { insertNodeAtCursor(tok('÷', '/', 'op')); return; }
+
+      // Row 4 Scientific Keys on CW:
+      // FRAC (SHIFT Mixed), SQRT (SHIFT nthRoot), SQ (SHIFT x^-1), POW (SHIFT Recurring .■̇), LOG_AB (SHIFT 10^x), LN (SHIFT e^x)
+      if (key === 'FRAC') {
+        if (wasShift) {
+          insertNodeAtCursor({ type: 'mixed', slots: [createSlot(), createSlot(), createSlot()] });
+        } else {
+          const pre = extractPrecedingAtoms();
+          insertNodeAtCursor({ type: 'frac', slots: [createSlot(pre), createSlot()] });
+        }
+        return;
+      }
+      if (key === 'SQRT') {
+        if (wasShift) {
+          const pre = extractPrecedingAtoms();
+          insertNodeAtCursor({ type: 'nthroot', slots: [createSlot(pre), createSlot()] });
+        } else {
+          insertNodeAtCursor({ type: 'sqrt', slots: [createSlot()] });
+        }
+        return;
+      }
+      if (key === 'SQ') {
+        if (wasShift) {
+          insertNodeAtCursor(tok('⁻¹', '**(-1)', 'post'));
+        } else {
+          insertNodeAtCursor(tok('²', '**2', 'post'));
+        }
+        return;
+      }
+      if (key === 'POW') {
+        if (wasShift) {
+          insertNodeAtCursor({ type: 'rec', slots: [createSlot()] });
+        } else {
+          insertNodeAtCursor({ type: 'power', slots: [createSlot()] });
+        }
+        return;
+      }
+      if (key === 'LOG_AB') {
+        if (wasShift) {
+          insertNodeAtCursor({ type: 'exp10', slots: [createSlot()] });
+        } else {
+          insertNodeAtCursor({ type: 'logab', slots: [createSlot(), createSlot()] });
+        }
+        return;
+      }
+      if (key === 'LN') {
+        if (wasShift) {
+          insertNodeAtCursor({ type: 'expe', slots: [createSlot()] });
+        } else {
+          insertNodeAtCursor(tok('ln(', '_ln(', 'fn'));
+        }
+        return;
+      }
+
+      // Row 5 Scientific Keys on CW: (-), DMS (SHIFT :), SIN, COS, TAN, LPAREN, RPAREN (SHIFT ,)
+      if (key === 'NEG') {
+        insertNodeAtCursor(tok('−', '-', 'op'));
+        return;
+      }
+      if (key === 'DMS') {
+        if (wasShift) insertNodeAtCursor(tok(':', ';', 'op'));
+        else insertNodeAtCursor(tok('°', '°', 'atom'));
+        return;
+      }
+      if (key === 'SIN') {
+        insertNodeAtCursor(wasShift ? tok('sin⁻¹(', '_asin(', 'fn') : tok('sin(', '_sin(', 'fn'));
+        return;
+      }
+      if (key === 'COS') {
+        insertNodeAtCursor(wasShift ? tok('cos⁻¹(', '_acos(', 'fn') : tok('cos(', '_cos(', 'fn'));
+        return;
+      }
+      if (key === 'TAN') {
+        insertNodeAtCursor(wasShift ? tok('tan⁻¹(', '_atan(', 'fn') : tok('tan(', '_tan(', 'fn'));
+        return;
+      }
+      if (key === 'LPAREN') {
+        insertNodeAtCursor(tok('(', '(', 'paren'));
+        return;
+      }
+      if (key === 'RPAREN') {
+        insertNodeAtCursor(wasShift ? tok(',', ',', 'sep') : tok(')', ')', 'paren'));
+        return;
+      }
+      if (key === 'EXP') {
+        insertNodeAtCursor(tok('×10', '*10**', 'op'));
+        return;
+      }
+      if (key === 'EXE' || key === 'OK') {
+        executeCalculation(wasShift);
+        return;
+      }
+    }
+
+    // --- Statistics App Key Handler ---
+    function handleStatisticsAppKey(key, wasShift) {
+      if (state.statScreen !== 'EDITOR') {
+        if (key === 'BACK' || key === 'AC' || key === 'OK' || key === 'EXE') {
+          state.statScreen = 'EDITOR';
+        }
+        return;
+      }
+      if (key === 'UP') { commitStatCell(); state.statRow = Math.max(0, state.statRow - 1); }
+      else if (key === 'DOWN') {
+        commitStatCell();
+        if (state.statRow + 1 >= state.statData.length) state.statData.push({ x: 0, y: 0, freq: 1 });
+        state.statRow++;
+      } else if (key === 'LEFT' || key === 'RIGHT') {
+        commitStatCell();
+        const cols = state.statMode === '1-VAR' ? (state.setup.statFreq ? 2 : 1) : 2;
+        state.statCol = (state.statCol + 1) % cols;
+      } else if (/^[0-9]$/.test(key)) state.statCellBuf += key;
+      else if (key === 'DOT') state.statCellBuf += '.';
+      else if (key === 'NEG' || key === 'SUB') {
+        state.statCellBuf = state.statCellBuf.startsWith('-') ? state.statCellBuf.slice(1) : '-' + state.statCellBuf;
+      } else if (key === 'DEL') {
+        if (state.statCellBuf) state.statCellBuf = state.statCellBuf.slice(0, -1);
+        else if (state.statData.length > 1) {
+          state.statData.splice(state.statRow, 1);
+          state.statRow = Math.min(state.statRow, state.statData.length - 1);
+        }
+      } else if (key === 'OK') {
+        commitStatCell();
+        if (state.statRow + 1 >= state.statData.length) state.statData.push({ x: 0, y: 0, freq: 1 });
+        state.statRow++;
+      } else if (key === 'EXE') {
+        commitStatCell();
+        if (state.statMode === '1-VAR') {
+          pushMenu('STAT_CALC_MENU', '1-Variable', [
+            { label: '1-Var Results', action: () => { clearMenus(); state.statScreen = 'RESULTS_1VAR'; } }
+          ]);
+        } else {
+          pushMenu('STAT_CALC_MENU', '2-Variable', [
+            { label: '2-Var Results', action: () => { clearMenus(); state.statScreen = 'RESULTS_2VAR'; } },
+            { label: 'Reg Results (y=a+bx)', action: () => { clearMenus(); state.statScreen = 'RESULTS_REG'; } }
+          ]);
+        }
+      }
+    }
+
+    function commitStatCell() {
+      if (state.statCellBuf.trim() !== '') {
+        const v = parseFloat(state.statCellBuf);
+        if (Number.isFinite(v)) {
+          const r = state.statData[state.statRow];
+          if (r) {
+            if (state.statCol === 0) r.x = v;
+            else if (state.statMode === '1-VAR') r.freq = v;
+            else r.y = v;
+          }
+        }
+        state.statCellBuf = '';
+      }
+    }
+
+    // --- Table App Key Handler ---
+    function generateTableRows() {
+      const start = Number(state.tableStart);
+      const end = Number(state.tableEnd);
+      const step = Number(state.tableStep);
+      if (step <= 0 || end < start) return;
+      const count = Math.min(30, Math.floor((end - start) / step) + 1);
+      const rows = [];
+      for (let i = 0; i < count; i++) {
+        const xVal = Number((start + i * step).toPrecision(10));
+        let fx = NaN, gx = NaN;
+        try { fx = MathEnv._f(xVal, 0); } catch (e) {}
+        try { gx = MathEnv._g(xVal, 0); } catch (e) {}
+        rows.push({ idx: i + 1, x: xVal, fx, gx });
+      }
+      state.tableRows = rows;
+      state.tableScroll = 0;
+    }
+
+    function handleTableAppKey(key, wasShift) {
+      if (state.tableScreen === 'RANGE') {
+        if (key === 'BACK' || key === 'AC') { state.tableScreen = 'VIEW'; return; }
+        if (/^[0-9]$/.test(key)) state.tableRangeBuf += key;
+        else if (key === 'DOT') state.tableRangeBuf += '.';
+        else if (key === 'NEG' || key === 'SUB') {
+          state.tableRangeBuf = state.tableRangeBuf.startsWith('-') ? state.tableRangeBuf.slice(1) : '-' + state.tableRangeBuf;
+        } else if (key === 'DEL') state.tableRangeBuf = state.tableRangeBuf.slice(0, -1);
+        else if (key === 'UP' || key === 'DOWN' || key === 'OK' || key === 'EXE') {
+          if (state.tableRangeBuf.trim() !== '') {
+            const v = parseFloat(state.tableRangeBuf);
+            if (Number.isFinite(v)) {
+              if (state.tableRangeField === 0) state.tableStart = v;
+              else if (state.tableRangeField === 1) state.tableEnd = v;
+              else if (state.tableRangeField === 2) state.tableStep = v;
+            }
+            state.tableRangeBuf = '';
+          }
+          if (key === 'UP') state.tableRangeField = Math.max(0, state.tableRangeField - 1);
+          else if (key === 'DOWN') state.tableRangeField = Math.min(2, state.tableRangeField + 1);
+          else {
+            if (state.tableRangeField < 2) state.tableRangeField++;
+            else {
+              generateTableRows();
+              state.tableScreen = 'VIEW';
+            }
+          }
+        }
+        return;
+      }
+      if (key === 'DOWN' || key === 'PGDN') {
+        state.tableScroll = Math.min(Math.max(0, state.tableRows.length - 3), state.tableScroll + 1);
+      } else if (key === 'UP' || key === 'PGUP') {
+        state.tableScroll = Math.max(0, state.tableScroll - 1);
+      }
+    }
+
+    // --- Ratio App Key Handler ---
+    function handleRatioAppKey(key, wasShift) {
+      const fields = state.ratioType === 1 ? ['A', 'B', 'D'] : ['A', 'B', 'C'];
+      if (key === 'BACK' || key === 'AC') { state.ratioResult = null; state.ratioBuf = ''; return; }
+      if (/^[0-9]$/.test(key)) state.ratioBuf += key;
+      else if (key === 'DOT') state.ratioBuf += '.';
+      else if (key === 'DEL') state.ratioBuf = state.ratioBuf.slice(0, -1);
+      else if (key === 'LEFT' || key === 'RIGHT') {
+        if (state.ratioBuf.trim() !== '') {
+          state.ratioCoeffs[fields[state.ratioField]] = parseFloat(state.ratioBuf) || 1;
+          state.ratioBuf = '';
+        }
+        state.ratioField = (state.ratioField + (key === 'RIGHT' ? 1 : 2)) % 3;
+      } else if (key === 'EXE' || key === 'OK') {
+        if (state.ratioBuf.trim() !== '') {
+          state.ratioCoeffs[fields[state.ratioField]] = parseFloat(state.ratioBuf) || 1;
+          state.ratioBuf = '';
+        }
+        const { A, B, C, D } = state.ratioCoeffs;
+        state.ratioResult = state.ratioType === 1 ? (A * D) / B : (B * C) / A;
+      }
+    }
+
+    // --- Math Box App Key Handler (Dice Roll, Coin Toss, Number Line, Circle) ---
+    function runDiceSimulation() {
+      const counts = {};
+      for (let i = 0; i < state.diceAttempts; i++) {
+        let sum = 0;
+        for (let d = 0; d < state.diceCount; d++) sum += Math.floor(Math.random() * 6) + 1;
+        counts[sum] = (counts[sum] || 0) + 1;
+      }
+      state.diceResults = Object.keys(counts).map(k => ({
+        sum: Number(k),
+        freq: counts[k],
+        rel: Number((counts[k] / state.diceAttempts).toFixed(3))
+      }));
+    }
+
+    function runCoinSimulation() {
+      const counts = { 0: 0, 1: 0, 2: 0 };
+      for (let i = 0; i < state.coinAttempts; i++) {
+        let heads = 0;
+        for (let c = 0; c < state.coinCount; c++) if (Math.random() < 0.5) heads++;
+        counts[heads] = (counts[heads] || 0) + 1;
+      }
+      state.coinResults = Object.keys(counts).map(k => ({
+        heads: Number(k),
+        freq: counts[k],
+        rel: Number((counts[k] / state.coinAttempts).toFixed(3))
+      }));
+    }
+
+    function handleMathBoxAppKey(key, wasShift) {
+      if (state.mathBoxTool === 'MENU') {
+        if (key === '1' || key === 'OK' || key === 'EXE') {
+          runDiceSimulation();
+          state.mathBoxTool = 'DICE';
+        } else if (key === '2') {
+          runCoinSimulation();
+          state.mathBoxTool = 'COIN';
+        } else if (key === '3') {
+          state.mathBoxTool = 'NUMLINE';
+        } else if (key === '4') {
+          state.mathBoxTool = 'CIRCLE';
+        }
+        return;
+      }
+      if (key === 'BACK' || key === 'AC') {
+        state.mathBoxTool = 'MENU';
+        return;
+      }
+      if (state.mathBoxTool === 'DICE' && (key === 'OK' || key === 'EXE')) {
+        runDiceSimulation();
+      } else if (state.mathBoxTool === 'COIN' && (key === 'OK' || key === 'EXE')) {
+        runCoinSimulation();
+      } else if (state.mathBoxTool === 'CIRCLE') {
+        if (key === 'RIGHT' || key === 'UP') state.circleAngle1 = (state.circleAngle1 + 15) % 360;
+        if (key === 'LEFT' || key === 'DOWN') state.circleAngle1 = (state.circleAngle1 + 345) % 360;
+      }
+    }
+
+    // --- Rendering LCD & Panels ---
+    function renderAll() {
+      const lcdScreen = document.getElementById('lcd-screen');
+      const statusBar = document.getElementById('lcd-status-bar');
+      const viewport = document.getElementById('lcd-viewport');
+
+      const contrastVal = 0.8 + (state.setup.contrast - 5) * 0.05;
+      lcdScreen.style.filter = `contrast(${contrastVal})`;
+
+      if (!state.powerOn) {
+        statusBar.style.opacity = '0';
+        viewport.innerHTML = `<div class="h-full flex items-center justify-center text-xs font-bold opacity-40">CASIO-STYLE CW EDU · OFF (Press ON)</div>`;
+        return;
+      }
+      statusBar.style.opacity = '1';
+
+      document.getElementById('ind-shift').style.opacity = state.shift ? '1' : '0.12';
+      document.getElementById('ind-math').style.opacity = state.setup.ioMode.startsWith('MathI') ? '1' : '0.15';
+      document.getElementById('ind-angle').textContent = state.setup.angleUnit;
+      document.getElementById('ind-fix').style.opacity = state.setup.numberFormat === 'Fix' ? '1' : '0.12';
+      document.getElementById('ind-sci').style.opacity = state.setup.numberFormat === 'Sci' ? '1' : '0.12';
+      document.getElementById('ind-hist-up').style.opacity = state.historyIndex > 0 ? '1' : '0.15';
+      document.getElementById('ind-hist-down').style.opacity = (state.historyIndex !== -1 && state.historyIndex < state.history.length - 1) ? '1' : '0.15';
+      document.getElementById('ind-app').textContent = state.app;
+
+      document.getElementById('status-summary-line').textContent =
+        `App: ${state.app} · Input/Output: ${state.setup.ioMode} · Angle: ${state.setup.angleUnit === 'D' ? 'Degree (D)' : state.setup.angleUnit === 'R' ? 'Radian (R)' : 'Gradian (G)'} · Format: ${state.setup.numberFormat}`;
+
+      document.getElementById('insp-fx').textContent = state.fxDef || 'Undefined';
+      document.getElementById('insp-gx').textContent = state.gxDef || 'Undefined';
+
+      if (state.menuStack.length > 0) {
+        viewport.innerHTML = renderMenuStackHTML();
+      } else {
+        viewport.innerHTML = renderActiveAppHTML();
+      }
+
+      renderMemoryInspector();
+      renderTapePanel();
+      updateDrillHighlight();
+    }
+
+    function renderMenuStackHTML() {
+      const top = topMenu();
+      if (!top) return '';
+
+      if (top.id === 'HOME') {
+        const apps = [
+          { name: 'Calculate', icon: '±×÷' },
+          { name: 'Statistics', icon: '📊' },
+          { name: 'Table', icon: 'f(x)' },
+          { name: 'Ratio', icon: 'A:B' },
+          { name: 'Math Box', icon: '🎲' }
+        ];
+        const sel = apps[state.homeIdx];
+        return `
+          <div class="flex flex-col justify-between h-full text-xs mono-font">
+            <div class="font-bold text-[11px] bg-black/85 text-[#d9e4d4] px-1.5 py-0.5 rounded flex justify-between">
+              <span>${sel.name}</span><span>[OK]</span>
+            </div>
+            <div class="grid grid-cols-5 gap-1 my-auto pt-1">
+              ${apps.map((a, i) => `
+                <div class="flex flex-col items-center justify-center p-1 rounded border ${i === state.homeIdx ? 'bg-black/85 text-[#d9e4d4] border-black font-bold' : 'border-black/25'}">
+                  <span class="text-[11px]">${a.icon}</span>
+                  <span class="text-[8px] truncate w-full text-center">${a.name}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (top.id === 'ERROR') {
+        return `
+          <div class="flex flex-col justify-between h-full text-xs mono-font py-1">
+            <div class="font-extrabold text-sm text-center border-b border-black/20 pb-0.5">${top.title}</div>
+            <div class="text-[11px] leading-snug">
+              <div>Press [BACK] or [◀] to edit</div>
+              <div>Press [AC] to clear</div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (top.id === 'QR_SCREEN') {
+        return `
+          <div class="flex items-center justify-between h-full text-[10px] mono-font px-1">
+            <div class="w-16 h-16 bg-black text-[#d9e4d4] p-1 grid grid-cols-5 gap-0.5 rounded">
+              <div class="bg-[#d9e4d4]"></div><div></div><div class="bg-[#d9e4d4]"></div><div></div><div class="bg-[#d9e4d4]"></div>
+              <div></div><div class="bg-[#d9e4d4]"></div><div></div><div class="bg-[#d9e4d4]"></div><div></div>
+              <div class="bg-[#d9e4d4]"></div><div class="bg-[#d9e4d4]"></div><div class="bg-[#d9e4d4]"></div><div></div><div class="bg-[#d9e4d4]"></div>
+              <div></div><div class="bg-[#d9e4d4]"></div><div></div><div class="bg-[#d9e4d4]"></div><div></div>
+              <div class="bg-[#d9e4d4]"></div><div></div><div class="bg-[#d9e4d4]"></div><div class="bg-[#d9e4d4]"></div><div class="bg-[#d9e4d4]"></div>
+            </div>
+            <div class="flex-1 pl-2.5 space-y-1">
+              <div class="font-bold text-[11px]">ClassWiz QR Link</div>
+              <div class="opacity-80">f(x) = ${state.fxDef}</div>
+              <div class="text-[9px] opacity-70">Press [BACK] to close</div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (top.id === 'DEF_FUNC') {
+        return `
+          <div class="flex flex-col justify-between h-full text-xs mono-font">
+            <div class="font-bold">${top.title}</div>
+            <div class="text-sm font-bold">${state.definingFuncBuf}<span class="m-cursor"></span></div>
+            <div class="text-[9px] opacity-75">Use [x] key for variable · [EXE/OK] Save</div>
+          </div>
+        `;
+      }
+
+      if (top.id === 'VAR_SHEET') {
+        const varNames = ['A', 'B', 'C', 'D', 'E', 'F', 'x', 'y', 'z'];
+        return `
+          <div class="flex flex-col justify-between h-full text-[10px] leading-tight mono-font">
+            <div class="grid grid-cols-3 gap-x-1.5 gap-y-0.5">
+              ${varNames.map((v, i) => `
+                <div class="px-1 rounded truncate ${i === state.varCursorIdx ? 'bg-black/85 text-[#d9e4d4] font-bold' : ''}">
+                  ${v}=${Number(state.memories[v].toPrecision(4))}
+                </div>
+              `).join('')}
+            </div>
+            <div class="text-[9px] opacity-75 border-t border-black/15 pt-0.5">[OK] Store / Recall / Edit · [BACK] Exit</div>
+          </div>
+        `;
+      }
+
+      if (top.id === 'VAR_EDIT_INPUT') {
+        return `
+          <div class="flex flex-col justify-between h-full text-xs mono-font">
+            <div class="font-bold">Edit Variable ${state.varEditTarget}:</div>
+            <div class="text-right text-base font-bold">${state.varEditBuf || state.memories[state.varEditTarget]}<span class="m-cursor"></span></div>
+            <div class="text-[9px] opacity-75">[EXE/OK] Confirm · [BACK] Cancel</div>
+          </div>
+        `;
+      }
+
+      // Generic scrollable list menu
+      const start = Math.max(0, Math.min(top.selectedIdx - 1, top.items.length - 3));
+      const visible = top.items.slice(start, start + 3);
+      return `
+        <div class="flex flex-col justify-between h-full text-[11px] leading-tight mono-font">
+          <div class="font-bold text-[10px] border-b border-black/20 pb-0.5 flex justify-between">
+            <span>${top.title}</span>
+            <span>[BACK]</span>
+          </div>
+          <div class="my-auto space-y-0.5">
+            ${visible.map((it, idx) => {
+              const realIdx = start + idx;
+              const isSel = realIdx === top.selectedIdx;
+              return `<div class="px-1.5 py-0.5 rounded flex justify-between ${isSel ? 'bg-black/85 text-[#d9e4d4] font-bold' : ''}">
+                <span>${it.label}</span>
+                ${isSel ? '<span>OK</span>' : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderActiveAppHTML() {
+      if (state.app === 'Calculate') {
+        const showCursor = !state.evaluated;
+        const inputHtml = renderSlotHTML(state.rootSlot, showCursor);
+        const outputHtml = state.evaluated ? formatResultHTML(state.lastResultValue) : '';
+        return `
+          <div id="lcd-input-line" class="text-[15px] leading-tight min-h-[44px] flex items-center overflow-x-auto whitespace-nowrap pr-2 math-font">${inputHtml}</div>
+          <div id="lcd-output-line" class="text-right text-[18px] font-bold leading-none min-h-[32px] flex items-end justify-end overflow-x-auto whitespace-nowrap math-font">${outputHtml}</div>
+        `;
+      }
+
+      if (state.app === 'Statistics') {
+        if (state.statScreen === 'RESULTS_1VAR') {
+          let sumX = 0, sumX2 = 0, n = 0;
+          for (const r of state.statData) {
+            const f = state.setup.statFreq ? (r.freq || 1) : 1;
+            n += f; sumX += r.x * f; sumX2 += r.x * r.x * f;
+          }
+          const mean = n > 0 ? sumX / n : 0;
+          const sd = n > 0 ? Math.sqrt(Math.max(0, sumX2 / n - mean * mean)) : 0;
+          return `
+            <div class="grid grid-cols-2 gap-x-2 text-[10px] leading-tight mono-font">
+              <div>x̄ = ${Number(mean.toPrecision(5))}</div><div>n = ${n}</div>
+              <div>Σx = ${Number(sumX.toPrecision(5))}</div><div>Σx²= ${Number(sumX2.toPrecision(5))}</div>
+              <div>σx = ${Number(sd.toPrecision(5))}</div><div>[BACK] Editor</div>
+            </div>
+          `;
+        }
+        if (state.statScreen === 'RESULTS_2VAR' || state.statScreen === 'RESULTS_REG') {
+          let n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+          for (const r of state.statData) {
+            n++; sx += r.x; sy += r.y; sxx += r.x * r.x; sxy += r.x * r.y;
+          }
+          const denom = n * sxx - sx * sx;
+          const b = denom !== 0 ? (n * sxy - sx * sy) / denom : 0;
+          const a = n > 0 ? (sy - b * sx) / n : 0;
+          return `
+            <div class="text-[10px] leading-tight mono-font">
+              <div class="font-bold">Reg Results: y = a + bx</div>
+              <div>a = ${Number(a.toPrecision(6))}</div>
+              <div>b = ${Number(b.toPrecision(6))}</div>
+              <div class="text-[9px] opacity-75">[BACK] Return to Data</div>
+            </div>
+          `;
+        }
+        const startRow = Math.max(0, state.statRow - 1);
+        const visible = state.statData.slice(startRow, startRow + 3);
+        const is1Var = state.statMode === '1-VAR';
+        return `
+          <div class="text-[10px] leading-tight mono-font h-full flex flex-col justify-between">
+            <div class="grid grid-cols-3 font-bold border-b border-black/30">
+              <span>#</span><span>x</span><span>${is1Var ? (state.setup.statFreq ? 'Freq' : '') : 'y'}</span>
+            </div>
+            <div>
+              ${visible.map((r, idx) => {
+                const realIdx = startRow + idx;
+                const activeRow = realIdx === state.statRow;
+                const xDisp = (activeRow && state.statCol === 0 && state.statCellBuf) ? state.statCellBuf : r.x;
+                const yDisp = is1Var
+                  ? (state.setup.statFreq ? ((activeRow && state.statCol === 1 && state.statCellBuf) ? state.statCellBuf : r.freq) : '')
+                  : ((activeRow && state.statCol === 1 && state.statCellBuf) ? state.statCellBuf : r.y);
+                return `<div class="grid grid-cols-3 ${activeRow ? 'bg-black/85 text-[#d9e4d4] font-bold px-0.5 rounded' : ''}">
+                  <span>${realIdx + 1}</span><span>${xDisp}</span><span>${yDisp}</span>
+                </div>`;
+              }).join('')}
+            </div>
+            <div class="text-[9px] opacity-75">[EXE] Calc Results · [TOOLS] Options</div>
+          </div>
+        `;
+      }
+
+      if (state.app === 'Table') {
+        if (state.tableScreen === 'RANGE') {
+          const sDisp = state.tableRangeField === 0 && state.tableRangeBuf ? state.tableRangeBuf : state.tableStart;
+          const eDisp = state.tableRangeField === 1 && state.tableRangeBuf ? state.tableRangeBuf : state.tableEnd;
+          const pDisp = state.tableRangeField === 2 && state.tableRangeBuf ? state.tableRangeBuf : state.tableStep;
+          return `
+            <div class="text-[11px] leading-tight mono-font">
+              <div class="font-bold">Table Range:</div>
+              <div class="${state.tableRangeField === 0 ? 'bg-black/85 text-[#d9e4d4] px-1 rounded font-bold' : ''}">Start: ${sDisp}</div>
+              <div class="${state.tableRangeField === 1 ? 'bg-black/85 text-[#d9e4d4] px-1 rounded font-bold' : ''}">End  : ${eDisp}</div>
+              <div class="${state.tableRangeField === 2 ? 'bg-black/85 text-[#d9e4d4] px-1 rounded font-bold' : ''}">Step : ${pDisp}</div>
+            </div>
+          `;
+        }
+        const slice = state.tableRows.slice(state.tableScroll, state.tableScroll + 3);
+        const showG = state.setup.tableType === 'f(x)/g(x)';
+        return `
+          <div class="text-[10px] leading-tight mono-font h-full flex flex-col justify-between">
+            <div class="grid ${showG ? 'grid-cols-4' : 'grid-cols-3'} font-bold border-b border-black/30">
+              <span>#</span><span>x</span><span>f(x)</span>${showG ? '<span>g(x)</span>' : ''}
+            </div>
+            <div>
+              ${slice.map(r => `
+                <div class="grid ${showG ? 'grid-cols-4' : 'grid-cols-3'}">
+                  <span>${r.idx}</span><span>${r.x}</span>
+                  <span>${Number.isFinite(r.fx) ? Number(r.fx.toPrecision(5)) : 'ERR'}</span>
+                  ${showG ? `<span>${Number.isFinite(r.gx) ? Number(r.gx.toPrecision(5)) : 'ERR'}</span>` : ''}
+                </div>
+              `).join('')}
+            </div>
+            <div class="text-[9px] opacity-75">[TOOLS] Range &amp; Define · [f(x)] Edit</div>
+          </div>
+        `;
+      }
+
+      if (state.app === 'Ratio') {
+        const c = state.ratioCoeffs;
+        if (state.ratioResult !== null) {
+          return `
+            <div class="flex flex-col justify-between h-full text-xs mono-font">
+              <div class="font-bold">${state.ratioType === 1 ? `${c.A} : ${c.B} = X : ${c.D}` : `${c.A} : ${c.B} = ${c.C} : X`}</div>
+              <div class="text-right text-base font-extrabold">X = ${formatResultHTML(state.ratioResult)}</div>
+              <div class="text-[9px] opacity-75">[BACK] Edit Coefficients</div>
+            </div>
+          `;
+        }
+        const getVal = (k, idx) => (state.ratioField === idx && state.ratioBuf) ? state.ratioBuf : c[k];
+        return `
+          <div class="flex flex-col justify-between h-full text-xs mono-font">
+            <div class="font-bold">${state.ratioType === 1 ? 'A : B = X : D' : 'A : B = C : X'}</div>
+            <div class="flex items-center justify-center gap-1.5 text-sm font-bold my-auto">
+              <span class="px-1.5 py-0.5 rounded ${state.ratioField === 0 ? 'bg-black/85 text-[#d9e4d4]' : 'border border-black/30'}">${getVal('A', 0)}</span>
+              <span>:</span>
+              <span class="px-1.5 py-0.5 rounded ${state.ratioField === 1 ? 'bg-black/85 text-[#d9e4d4]' : 'border border-black/30'}">${getVal('B', 1)}</span>
+              <span>=</span>
+              ${state.ratioType === 1
+                ? `<span class="opacity-70">X</span><span>:</span><span class="px-1.5 py-0.5 rounded ${state.ratioField === 2 ? 'bg-black/85 text-[#d9e4d4]' : 'border border-black/30'}">${getVal('D', 2)}</span>`
+                : `<span class="px-1.5 py-0.5 rounded ${state.ratioField === 2 ? 'bg-black/85 text-[#d9e4d4]' : 'border border-black/30'}">${getVal('C', 2)}</span><span>:</span><span class="opacity-70">X</span>`
+              }
+            </div>
+            <div class="text-[9px] opacity-75">[◀][▶] Select · [EXE] Solve X</div>
+          </div>
+        `;
+      }
+
+      if (state.app === 'MathBox') {
+        if (state.mathBoxTool === 'MENU') {
+          return `
+            <div class="text-[11px] leading-tight mono-font">
+              <div class="font-bold border-b border-black/20 mb-0.5">Math Box Learning Tools:</div>
+              <div>1: Dice Roll (Probability) [OK]</div>
+              <div>2: Coin Toss (Simulation)</div>
+              <div>3: Number Line · 4: Unit Circle</div>
+            </div>
+          `;
+        }
+        if (state.mathBoxTool === 'DICE') {
+          const top3 = state.diceResults.slice(0, 3);
+          return `
+            <div class="text-[10px] leading-tight mono-font h-full flex flex-col justify-between">
+              <div class="font-bold border-b border-black/25">Dice Roll (2 Dice, n=${state.diceAttempts})</div>
+              <div>
+                ${top3.map(r => `<div class="flex justify-between"><span>Sum=${r.sum}</span><span>Freq=${r.freq}</span><span>Rel=${r.rel}</span></div>`).join('')}
+              </div>
+              <div class="text-[9px] opacity-75">[OK] Re-roll · [BACK] Math Box Menu</div>
+            </div>
+          `;
+        }
+        if (state.mathBoxTool === 'COIN') {
+          return `
+            <div class="text-[10px] leading-tight mono-font h-full flex flex-col justify-between">
+              <div class="font-bold border-b border-black/25">Coin Toss (2 Coins, n=${state.coinAttempts})</div>
+              <div>
+                ${state.coinResults.map(r => `<div class="flex justify-between"><span>Heads=${r.heads}</span><span>Freq=${r.freq}</span><span>Rel=${r.rel}</span></div>`).join('')}
+              </div>
+              <div class="text-[9px] opacity-75">[OK] Re-toss · [BACK] Math Box Menu</div>
+            </div>
+          `;
+        }
+        if (state.mathBoxTool === 'NUMLINE') {
+          return `
+            <div class="text-[10px] leading-tight mono-font h-full flex flex-col justify-between">
+              <div class="font-bold">Number Line: A: ${state.numLineA}, B: ${state.numLineB}</div>
+              <div class="my-auto py-1">
+                <div class="w-full h-1.5 bg-black/30 relative rounded">
+                  <div class="absolute left-1/4 right-1/4 h-1.5 bg-black"></div>
+                </div>
+                <div class="flex justify-between text-[9px] mt-0.5"><span>-4</span><span>-2</span><span>0</span><span>2</span><span>4</span></div>
+              </div>
+              <div class="text-[9px] opacity-75">[BACK] Math Box Menu</div>
+            </div>
+          `;
+        }
+        if (state.mathBoxTool === 'CIRCLE') {
+          const ang = state.circleAngle1;
+          const sVal = Number(Math.sin((ang * Math.PI) / 180).toPrecision(4));
+          const cVal = Number(Math.cos((ang * Math.PI) / 180).toPrecision(4));
+          return `
+            <div class="text-[10px] leading-tight mono-font h-full flex flex-col justify-between">
+              <div class="font-bold">Unit Circle: θ = ${ang}° [◀/▶ Adjust]</div>
+              <div>sin(${ang}°) = ${sVal} · cos(${ang}°) = ${cVal}</div>
+              <div class="text-[9px] opacity-75">[BACK] Math Box Menu</div>
+            </div>
+          `;
+        }
+      }
+
+      return '';
+    }
+
+    const KEY_DISPLAY_LABELS = {
+      ON: 'ON', HOME: 'HOME', SETTINGS: 'SETTINGS', BACK: 'BACK',
+      SHIFT: 'SHIFT', VARIABLE: 'x,y,z', FUNCTION: 'f(x)', PGUP: 'PgUp',
+      CATALOG: 'CATALOG', TOOLS: 'TOOLS', VAR_X: 'x', PGDN: 'PgDn',
+      UP: '▲', DOWN: '▼', LEFT: '◀', RIGHT: '▶', OK: 'OK',
+      FRAC: '■/□', SQRT: '√■', SQ: 'x²', POW: 'x■', LOG_AB: 'log■□', LN: 'ln',
+      NEG: '(−)', DMS: '° ’ ”', SIN: 'sin', COS: 'cos', TAN: 'tan', LPAREN: '(', RPAREN: ')',
+      DEL: 'DEL', AC: 'AC', MUL: '×', DIV: '÷', ADD: '+', SUB: '−',
+      DOT: '.', EXP: '×10ˣ', FORMAT: 'FORMAT', EXE: 'EXE'
+    };
+
+    function logKeystroke(key) {
+      const label = KEY_DISPLAY_LABELS[key] || key;
+      state.keystrokeLog.push({ key, label });
+      if (state.keystrokeLog.length > 80) state.keystrokeLog.shift();
+    }
+
+    function renderTapePanel() {
+      const stream = document.getElementById('keystroke-stream');
+      if (state.keystrokeLog.length === 0) {
+        stream.innerHTML = `<span class="text-slate-500 italic">Press any calculator button to record the exact key sequence...</span>`;
+      } else {
+        stream.innerHTML = state.keystrokeLog.map(item => {
+          let colorCls = 'bg-slate-800 text-slate-200 border-slate-700';
+          if (item.key === 'SHIFT') colorCls = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+          else if (['HOME', 'CATALOG', 'TOOLS', 'FORMAT', 'FUNCTION', 'VARIABLE'].includes(item.key)) colorCls = 'bg-sky-500/20 text-sky-300 border-sky-500/40';
+          else if (item.key === 'EXE' || item.key === 'OK') colorCls = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+          return `<span class="px-1.5 py-0.5 rounded border font-semibold ${colorCls}">[${item.label}]</span>`;
+        }).join('<span class="text-slate-600">→</span>');
+        stream.scrollTop = stream.scrollHeight;
+      }
+
+      const historyList = document.getElementById('history-tape-list');
+      document.getElementById('history-count-label').textContent = `${state.history.length} entries`;
+      if (state.history.length === 0) {
+        historyList.innerHTML = `
+          <div class="text-xs text-slate-500 italic p-4 text-center bg-slate-950/50 rounded-xl border border-slate-800/60">
+            No calculations evaluated yet. Enter an expression and press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300">EXE</kbd>.
+          </div>
+        `;
+      } else {
+        historyList.innerHTML = state.history.slice().reverse().map((h, revIdx) => {
+          const idx = state.history.length - 1 - revIdx;
+          return `
+            <div data-replay-idx="${idx}" class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-sky-500/50 cursor-pointer transition flex items-center justify-between gap-3">
+              <div class="text-xs text-slate-300 math-font overflow-x-auto">${h.exprHTML}</div>
+              <div class="text-sm font-bold text-emerald-300 math-font whitespace-nowrap">= ${h.resHTML}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function renderMemoryInspector() {
+      const grid = document.getElementById('memory-grid');
+      const keys = ['Ans', 'A', 'B', 'C', 'D', 'E', 'F', 'x', 'y', 'z'];
+      grid.innerHTML = keys.map(k => {
+        const val = state.memories[k];
+        const nonZero = Math.abs(val) > 1e-12;
+        return `
+          <div class="p-2.5 rounded-xl border ${nonZero ? 'bg-sky-950/40 border-sky-500/40' : 'bg-slate-950/60 border-slate-800'} flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="font-bold ${k === 'Ans' ? 'text-amber-300' : 'text-sky-300'} mono-font">${k}</span>
+              <button type="button" data-insert-var="${k}" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Insert</button>
+            </div>
+            <div class="text-xs font-bold text-white mono-font truncate" title="${val}">${formatStandardNumber(val)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderDrillsPanel() {
+      const grid = document.getElementById('drills-grid');
+      document.getElementById('drills-score-badge').textContent = `Completed: ${state.completedDrills.size} / ${DRILLS.length}`;
+      grid.innerHTML = DRILLS.map(d => {
+        const isDone = state.completedDrills.has(d.id);
+        const isCurrent = state.activeDrill && state.activeDrill.id === d.id;
+        const seqPreview = d.targetKeys.map(k => `[${KEY_DISPLAY_LABELS[k] || k}]`).join(' ');
+        return `
+          <div class="p-3.5 rounded-xl border ${isCurrent ? 'bg-sky-950/60 border-sky-400' : isDone ? 'bg-emerald-950/25 border-emerald-500/40' : 'bg-slate-950/70 border-slate-800'} flex flex-col justify-between gap-2">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <h3 class="text-xs font-bold text-white">${d.title}</h3>
+                ${isDone ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">✓ Mastered</span>' : ''}
+              </div>
+              <p class="text-[11px] text-slate-300 mb-2">${d.desc}</p>
+              <div class="text-[10px] mono-font text-amber-300/90 bg-slate-900/90 p-1.5 rounded border border-slate-800 mb-1.5 truncate" title="${seqPreview}">
+                Seq: ${seqPreview}
+              </div>
+              <div class="text-[10px] text-emerald-400">${d.expectedHint}</div>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" data-start-drill="${d.id}" class="flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white transition">
+                ${isCurrent ? 'Restart Drill' : 'Practice Step-by-Step'}
+              </button>
+              <button type="button" data-demo-drill="${d.id}" class="py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                ▶ Auto-Demo
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function startDrill(drillId) {
+      const drill = DRILLS.find(d => d.id === drillId);
+      if (!drill) return;
+      launchApp('Calculate');
+      state.rootSlot = [];
+      state.cursorSlot = state.rootSlot;
+      state.cursorIndex = 0;
+      state.evaluated = false;
+      state.activeDrill = drill;
+      state.drillStep = 0;
+      renderDrillsPanel();
+      renderAll();
+    }
+
+    function checkTrainingDrillStep(pressedKey) {
+      if (!state.activeDrill) return;
+      const expected = state.activeDrill.targetKeys[state.drillStep];
+      if (pressedKey === expected) {
+        state.drillStep++;
+        if (state.drillStep >= state.activeDrill.targetKeys.length) {
+          state.completedDrills.add(state.activeDrill.id);
+          state.activeDrill = null;
+          state.drillStep = 0;
+          renderDrillsPanel();
+        }
+      }
+    }
+
+    function updateDrillHighlight() {
+      document.querySelectorAll('.cw-key').forEach(btn => btn.classList.remove('highlight-target'));
+      const banner = document.getElementById('active-drill-banner');
+      if (!state.activeDrill) {
+        banner.classList.add('hidden');
+        return;
+      }
+      banner.classList.remove('hidden');
+      document.getElementById('drill-banner-title').textContent = state.activeDrill.title;
+      document.getElementById('drill-banner-desc').textContent = state.activeDrill.desc;
+      const nextKey = state.activeDrill.targetKeys[state.drillStep];
+      document.getElementById('drill-next-key').textContent = `[${KEY_DISPLAY_LABELS[nextKey] || nextKey}]`;
+      document.getElementById('drill-progress').textContent = `${state.drillStep} / ${state.activeDrill.targetKeys.length}`;
+
+      const btn = document.querySelector(`.cw-key[data-key="${nextKey}"]`);
+      if (btn) btn.classList.add('highlight-target');
+    }
+
+    let demoIntervalId = null;
+    function runAutoDemo(drillId) {
+      if (demoIntervalId) { clearInterval(demoIntervalId); demoIntervalId = null; }
+      startDrill(drillId);
+      const drill = DRILLS.find(d => d.id === drillId);
+      if (!drill) return;
+      let idx = 0;
+      demoIntervalId = setInterval(() => {
+        if (idx >= drill.targetKeys.length) {
+          clearInterval(demoIntervalId);
+          demoIntervalId = null;
+          return;
+        }
+        const k = drill.targetKeys[idx++];
+        const btn = document.querySelector(`.cw-key[data-key="${k}"]`);
+        if (btn) {
+          btn.classList.add('key-active');
+          setTimeout(() => btn.classList.remove('key-active'), 140);
+        }
+        handleKey(k);
+      }, 380);
+    }
+
+    document.addEventListener('click', (e) => {
+      const keyBtn = e.target.closest('[data-key]');
+      if (keyBtn) {
+        handleKey(keyBtn.getAttribute('data-key'));
+        return;
+      }
+
+      const tabBtn = e.target.closest('[data-tab]');
+      if (tabBtn) {
+        const targetTab = tabBtn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          const active = b.getAttribute('data-tab') === targetTab;
+          b.className = active
+            ? 'tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-sky-500 text-white shadow transition'
+            : 'tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition';
+        });
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        const panel = document.getElementById(`tab-panel-${targetTab}`);
+        if (panel) panel.classList.remove('hidden');
+        return;
+      }
+
+      const startDrillBtn = e.target.closest('[data-start-drill]');
+      if (startDrillBtn) {
+        startDrill(startDrillBtn.getAttribute('data-start-drill'));
+        return;
+      }
+
+      const demoDrillBtn = e.target.closest('[data-demo-drill]');
+      if (demoDrillBtn) {
+        runAutoDemo(demoDrillBtn.getAttribute('data-demo-drill'));
+        return;
+      }
+
+      const replayItem = e.target.closest('[data-replay-idx]');
+      if (replayItem) {
+        const idx = parseInt(replayItem.getAttribute('data-replay-idx'), 10);
+        const entry = state.history[idx];
+        if (entry) {
+          launchApp('Calculate');
+          state.rootSlot = JSON.parse(entry.astJSON);
+          state.cursorSlot = state.rootSlot;
+          state.cursorIndex = state.rootSlot.length;
+          state.lastResultValue = entry.value;
+          state.evaluated = true;
+          state.displayFormatMode = 'DEFAULT';
+          renderAll();
+        }
+        return;
+      }
+
+      const insertVarBtn = e.target.closest('[data-insert-var]');
+      if (insertVarBtn) {
+        const v = insertVarBtn.getAttribute('data-insert-var');
+        clearMenus();
+        insertNodeAtCursor(tok(v, v, 'var'));
+        renderAll();
+        return;
+      }
+    });
+
+    document.getElementById('btn-stop-drill').addEventListener('click', () => {
+      if (demoIntervalId) { clearInterval(demoIntervalId); demoIntervalId = null; }
+      state.activeDrill = null;
+      state.drillStep = 0;
+      renderDrillsPanel();
+      renderAll();
+    });
+
+    document.getElementById('btn-toggle-training').addEventListener('click', () => {
+      if (!state.activeDrill) startDrill(DRILLS[0].id);
+      else {
+        state.activeDrill = null;
+        renderDrillsPanel();
+        renderAll();
+      }
+    });
+
+    document.getElementById('btn-cycle-theme').addEventListener('click', () => {
+      state.chassisTheme = (state.chassisTheme + 1) % 3;
+      const chassis = document.getElementById('cw-chassis');
+      chassis.classList.remove('theme-light', 'theme-blue');
+      const names = ['Matte Black', 'Arctic White', 'Cobalt Blue'];
+      if (state.chassisTheme === 1) chassis.classList.add('theme-light');
+      if (state.chassisTheme === 2) chassis.classList.add('theme-blue');
+      document.getElementById('lbl-theme-name').textContent = names[state.chassisTheme];
+    });
+
+    document.getElementById('btn-toggle-lang').addEventListener('click', () => {
+      state.lang = state.lang === 'BILINGUAL' ? 'EN' : 'BILINGUAL';
+      document.getElementById('app-title').textContent =
+        state.lang === 'BILINGUAL' ? 'CalcX CW · 在線科學計算器' : 'CalcX CW · Scientific Calculator Simulator';
+      document.getElementById('lbl-training-btn').textContent =
+        state.lang === 'BILINGUAL' ? 'CW 教學訓練 (CW Drills)' : 'Guided CW Drills';
+    });
+
+    document.getElementById('btn-clear-keystrokes').addEventListener('click', () => {
+      state.keystrokeLog = [];
+      renderTapePanel();
+    });
+
+    document.getElementById('btn-copy-keystrokes').addEventListener('click', () => {
+      const text = state.keystrokeLog.map(k => `[${k.label}]`).join(' → ');
+      if (!text) return;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        const btn = document.getElementById('btn-copy-keystrokes');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Sequence'; }, 1200);
+      } catch (e) {}
+    });
+
+    document.getElementById('btn-clear-memories').addEventListener('click', () => {
+      for (const k of Object.keys(state.memories)) state.memories[k] = 0;
+      renderAll();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const k = e.key;
+      if (/^[0-9]$/.test(k)) { e.preventDefault(); handleKey(k); }
+      else if (k === '.') { e.preventDefault(); handleKey('DOT'); }
+      else if (k === '+') { e.preventDefault(); handleKey('ADD'); }
+      else if (k === '-') { e.preventDefault(); handleKey('SUB'); }
+      else if (k === '*') { e.preventDefault(); handleKey('MUL'); }
+      else if (k === '/') { e.preventDefault(); handleKey('DIV'); }
+      else if (k === '(') { e.preventDefault(); handleKey('LPAREN'); }
+      else if (k === ')') { e.preventDefault(); handleKey('RPAREN'); }
+      else if (k === '^') { e.preventDefault(); handleKey('POW'); }
+      else if (k === 'Enter' || k === '=') { e.preventDefault(); handleKey(state.menuStack.length > 0 ? 'OK' : 'EXE'); }
+      else if (k === 'Backspace') { e.preventDefault(); handleKey(state.menuStack.length > 0 ? 'BACK' : 'DEL'); }
+      else if (k === 'Escape') { e.preventDefault(); handleKey('AC'); }
+      else if (k === ' ') { e.preventDefault(); handleKey('SHIFT'); }
+      else if (k === 'ArrowLeft') { e.preventDefault(); handleKey('LEFT'); }
+      else if (k === 'ArrowRight') { e.preventDefault(); handleKey('RIGHT'); }
+      else if (k === 'ArrowUp') { e.preventDefault(); handleKey('UP'); }
+      else if (k === 'ArrowDown') { e.preventDefault(); handleKey('DOWN'); }
+      else if (k.toLowerCase() === 'f') { e.preventDefault(); handleKey('FORMAT'); }
+      else if (k.toLowerCase() === 'h') { e.preventDefault(); handleKey('HOME'); }
+      else if (k.toLowerCase() === 'c') { e.preventDefault(); handleKey('CATALOG'); }
+      else if (k.toLowerCase() === 'v') { e.preventDefault(); handleKey('VARIABLE'); }
+      else if (k.toLowerCase() === 'x') { e.preventDefault(); handleKey('VAR_X'); }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDrillsPanel();
+      renderAll();
+    });
+  </script>
+</body>
+</html>
