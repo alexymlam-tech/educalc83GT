@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CalcX CW · 在線科學計算器 | fx-83GT CW Educational Simulator</title>
+  <title>CW-83 EDU智算平台 (CW Edition) | fx-83GT CW Educational Simulator</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=STIX+Two+Math&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Share+Tech+Mono&family=STIX+Two+Math&display=swap" rel="stylesheet">
   <style>
     :root {
       --lcd-bg: #d9e4d4;
@@ -23,8 +23,9 @@
       overflow-x: hidden;
       user-select: none;
     }
-    .mono-font { font-family: 'JetBrains Mono', monospace; }
-    .math-font { font-family: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif; }
+    .mono-font { font-family: 'Courier Prime', 'JetBrains Mono', monospace; }
+    .math-font { font-family: 'Courier Prime', 'STIX Two Math', 'Cambria Math', monospace; font-weight: 700; letter-spacing: 0.03em; }
+    .lcd-table-grid { font-family: 'Courier Prime', 'JetBrains Mono', monospace; font-weight: 700; }
 
     /* CW Rounded-Convex Matte Chassis */
     .cw-chassis {
@@ -122,7 +123,7 @@
       background: linear-gradient(180deg, #3f4859 0%, #2a313f 100%);
       color: #ffffff;
       height: 36px;
-      font-size: 1.02rem;
+      font-size: 1.15rem;
       font-weight: 700;
       border-radius: 11px;
     }
@@ -184,6 +185,46 @@
     @keyframes blink-caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
     .overdot { position: relative; display: inline-block; }
     .overdot::after { content: '•'; position: absolute; top: -0.6em; left: 50%; transform: translateX(-50%); font-size: 0.65em; line-height: 1; }
+
+    /* Mobile Full-Screen Calculator Mode */
+    body.calc-fullscreen-mode header#main-header,
+    body.calc-fullscreen-mode section#right-workbench,
+    body.calc-fullscreen-mode div#kbd-hint,
+    body.calc-fullscreen-mode div#active-drill-banner {
+      display: none !important;
+    }
+    body.calc-fullscreen-mode main#main-workspace {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 4px !important;
+      min-height: 100dvh !important;
+      max-width: 100vw !important;
+    }
+    body.calc-fullscreen-mode section#left-calc-col {
+      width: 100% !important;
+      max-width: 410px !important;
+      margin: 0 auto !important;
+    }
+    body.calc-fullscreen-mode .cw-chassis {
+      max-width: 100% !important;
+      width: 100% !important;
+      border-radius: 20px !important;
+      padding: 12px 14px !important;
+    }
+    .projector-lcd {
+      background-color: var(--lcd-bg);
+      background-image:
+        linear-gradient(to right, var(--lcd-grid) 1.5px, transparent 1.5px),
+        linear-gradient(to bottom, var(--lcd-grid) 1.5px, transparent 1.5px);
+      background-size: 5px 5px;
+      color: var(--lcd-ink);
+      border-radius: 14px;
+      border: 3px solid #1e293b;
+      box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.25), 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
@@ -192,7 +233,7 @@
 <body class="selection:bg-sky-500 selection:text-white">
 
   <!-- Top Header -->
-  <header class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-30">
+  <header id="main-header" class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-bold text-white text-lg">
@@ -200,7 +241,7 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-bold text-base sm:text-lg tracking-tight text-white" id="app-title">CalcX CW · 在線科學計算器</h1>
+            <h1 class="font-bold text-base sm:text-lg tracking-tight text-white" id="app-title">CW-83 EDU智算平台</h1>
             <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
               100% fx-83GT CW Workflow Edition
             </span>
@@ -221,9 +262,19 @@
           <button type="button" data-key="QUICK_MATHBOX" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-emerald-300 font-semibold">Math Box</button>
         </div>
 
+        <button id="btn-toggle-projector" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition flex items-center gap-1.5">
+          <span>🖥️</span>
+          <span id="lbl-projector-btn">投影佈局</span>
+        </button>
+
+        <button id="btn-enter-fullscreen" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 transition flex items-center gap-1.5" title="Hide header and fill screen with calculator">
+          <span>📱</span>
+          <span id="lbl-fullscreen-btn">全屏計數機</span>
+        </button>
+
         <button id="btn-toggle-training" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center gap-1.5">
           <span>🎯</span>
-          <span id="lbl-training-btn">CW 教學訓練 (CW Drills)</span>
+          <span id="lbl-training-btn">CW 教學訓練</span>
         </button>
 
         <button id="btn-cycle-theme" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">
@@ -238,10 +289,15 @@
   </header>
 
   <!-- Main Workspace -->
-  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+  <!-- Floating Mini Toolbar when in Mobile Full-Screen Calculator Mode -->
+  <div id="fullscreen-floating-bar" class="hidden fixed top-2 right-2 z-50 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur border border-slate-700 px-2.5 py-1 rounded-full shadow-xl">
+    <button id="btn-fs-theme" type="button" class="text-xs px-1.5 py-0.5 rounded text-slate-200 hover:bg-slate-800" title="Switch Theme">🎨</button>
+    <button id="btn-exit-fullscreen" type="button" class="text-xs font-bold px-2 py-0.5 rounded-full bg-sky-500 text-white hover:bg-sky-400">↙ 展開工具列</button>
+  </div>
+  <main id="main-workspace" class="max-w-7xl mx-auto px-3 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
     <!-- Left Column: Physical fx-83GT CW Simulator -->
-    <section class="lg:col-span-5 xl:col-span-5 flex flex-col items-center">
+    <section id="left-calc-col" class="lg:col-span-5 xl:col-span-5 flex flex-col items-center">
       <!-- Active Drill Banner -->
       <div id="active-drill-banner" class="hidden w-full max-w-[366px] mb-3 p-3 rounded-xl bg-sky-950/90 border border-sky-500/40 shadow-lg">
         <div class="flex items-center justify-between mb-1">
@@ -264,8 +320,8 @@
         <!-- Distinct Non-Affiliated Header (fx-83GT CW style: clean matte top, AAA battery powered) -->
         <div class="flex items-center justify-between mb-2.5 px-1.5">
           <div>
-            <span class="font-extrabold tracking-wider text-sm text-slate-100 mono-font">CALCX</span>
-            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 mono-font ml-1">CW-83 EDU</span>
+            <span class="font-extrabold tracking-wider text-sm text-slate-100 mono-font">CW-83</span>
+            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 mono-font ml-1">EDU 智算平台</span>
           </div>
           <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
             4-GRADATION HD DISPLAY
@@ -274,7 +330,7 @@
 
         <!-- High-Definition 4-Gradation LCD Screen -->
         <div class="lcd-bezel mb-3">
-          <div id="lcd-screen" class="lcd-screen h-[132px] flex flex-col justify-between p-2.5 mono-font">
+          <div id="lcd-screen" class="lcd-screen h-[146px] flex flex-col justify-between p-2.5 mono-font">
             <!-- Status Indicators Bar -->
             <div id="lcd-status-bar" class="flex items-center justify-between text-[10px] font-bold tracking-tight border-b border-black/10 pb-1 select-none">
               <div class="flex items-center gap-1.5">
@@ -293,8 +349,8 @@
 
             <!-- Main LCD Viewport -->
             <div id="lcd-viewport" class="flex-1 flex flex-col justify-between overflow-hidden relative py-0.5">
-              <div id="lcd-input-line" class="text-[15px] leading-tight min-h-[44px] flex items-center overflow-x-auto whitespace-nowrap pr-2 math-font"></div>
-              <div id="lcd-output-line" class="text-right text-[18px] font-bold leading-none min-h-[32px] flex items-end justify-end overflow-x-auto whitespace-nowrap math-font"></div>
+              <div id="lcd-input-line" class="text-[18px] leading-tight min-h-[48px] flex items-center overflow-x-auto whitespace-nowrap pr-2 math-font"></div>
+              <div id="lcd-output-line" class="text-right text-[23px] font-bold leading-none min-h-[36px] flex items-end justify-end overflow-x-auto whitespace-nowrap math-font"></div>
             </div>
           </div>
         </div>
@@ -529,7 +585,7 @@
       </div>
 
       <!-- Keyboard Shortcuts Legend -->
-      <div class="mt-3 text-center text-[11px] text-slate-400 max-w-[366px] leading-relaxed">
+      <div id="kbd-hint" class="mt-3 text-center text-[11px] text-slate-400 max-w-[366px] leading-relaxed">
         Keyboard: <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">Enter</kbd> = EXE/OK ·
         <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">Backspace</kbd> = DEL/BACK ·
         <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 mono-font">Esc</kbd> = AC ·
@@ -539,10 +595,13 @@
     </section>
 
     <!-- Right Column: Educational Training Workbench -->
-    <section class="lg:col-span-7 xl:col-span-7 flex flex-col gap-4">
+    <section id="right-workbench" class="lg:col-span-7 xl:col-span-7 flex flex-col gap-4">
 
       <!-- Tab Bar -->
       <div class="flex flex-wrap gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+        <button type="button" data-tab="projector" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-emerald-300 hover:bg-slate-800 transition">
+          🖥️ 投影示範 (Projector)
+        </button>
         <button type="button" data-tab="drills" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-sky-500 text-white shadow transition">
           🎯 CW Interactive Drills
         </button>
@@ -555,6 +614,83 @@
         <button type="button" data-tab="guide" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">
           📖 GT-X vs GT CW Workflow Map
         </button>
+      </div>
+
+      <!-- TAB 0: Teacher Projector & Synchronized Large Display Mode (同步顯示屏 + 老師示範紀錄) -->
+      <div id="tab-panel-projector" class="tab-panel hidden space-y-4">
+        <div class="bg-slate-900/85 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <h2 class="text-sm sm:text-base font-bold text-white">同步顯示屏 (Synchronized Large Projector Display)</h2>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-300">
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="chk-sound-fx" class="rounded bg-slate-800 border-slate-700 text-sky-500" />
+                <span>🔊 按鍵音效 (Beep)</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="projector-lcd" class="projector-lcd min-h-[210px] sm:min-h-[240px] p-4 sm:p-6 flex flex-col justify-between mono-font">
+            <div id="proj-status-bar" class="flex items-center justify-between text-xs sm:text-sm font-bold tracking-wider border-b border-black/15 pb-2">
+              <div class="flex items-center gap-2.5">
+                <span id="proj-ind-shift" class="px-1.5 py-0.5 rounded bg-black/85 text-[#d9e4d4] opacity-15">S</span>
+                <span id="proj-ind-math" class="px-1.5 py-0.5 rounded border border-black/50">√□</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span id="proj-ind-angle" class="px-2 py-0.5 rounded bg-black/85 text-[#d9e4d4]">D</span>
+                <span id="proj-ind-app" class="px-2 py-0.5 rounded bg-black/15 font-extrabold">Calculate</span>
+              </div>
+            </div>
+
+            <div id="proj-viewport" class="flex-1 flex flex-col justify-between py-2 overflow-x-auto">
+              <div id="proj-input-line" class="text-2xl sm:text-3xl leading-snug min-h-[72px] flex items-center math-font"></div>
+              <div id="proj-output-line" class="text-right text-3xl sm:text-4xl font-extrabold leading-none min-h-[54px] flex items-end justify-end math-font"></div>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">
+            刪除／復原只整理下方按鍵紀錄；實際輸入請用計算器上的 DEL 修正。可暫停記錄，修正後再繼續。
+          </p>
+        </div>
+
+        <div class="bg-slate-900/85 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <span class="text-sm font-bold text-white">按一下計算器開始示範 (Live Keystroke Stream)</span>
+            <div class="flex items-center gap-3 text-xs">
+              <button id="btn-proj-segment" type="button" class="text-sky-400 hover:text-sky-300 font-semibold">分段 (New Line)</button>
+              <button id="btn-proj-clear" type="button" class="text-rose-400 hover:text-rose-300 font-semibold">清除紀錄 (Clear)</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-800 text-xs">
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btn-proj-pause" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium">
+                暫停記錄 (Pause)
+              </button>
+              <button id="btn-proj-del-last" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium">
+                刪紀錄末鍵 (Del Last)
+              </button>
+              <button id="btn-proj-undo-del" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium">
+                復原刪除 (Undo Del)
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-slate-300">
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="chk-ac-clear-log" class="rounded bg-slate-800 border-slate-700 text-sky-500" />
+                <span>AC / ON 清紀錄</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="chk-del-sync-log" class="rounded bg-slate-800 border-slate-700 text-sky-500" />
+                <span>DEL 同步紀錄</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="proj-keystroke-box" class="min-h-[160px] max-h-[260px] overflow-y-auto p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 flex flex-wrap items-center content-start gap-2 mono-font text-sm">
+            <span class="text-slate-500 italic text-xs">按一下左側計算器按鍵開始同步示範...</span>
+          </div>
+        </div>
       </div>
 
       <!-- TAB 1: Interactive CW Training Drills -->
@@ -945,6 +1081,8 @@
       tableRangeBuf: '',
       tableRows: [],
       tableScroll: 0,
+      tableCursorRow: 0,
+      tableCursorCol: 0,
       tableScreen: 'VIEW', // 'VIEW' | 'RANGE'
 
       // Ratio App State
@@ -967,7 +1105,13 @@
       circleAngle1: 45,
       circleAngle2: 135,
 
-      lang: 'BILINGUAL',
+      lang: 'ZH',
+      fullscreenCalc: false,
+      projectorPauseLog: false,
+      acClearsLog: false,
+      delSyncsLog: false,
+      soundFx: false,
+      deletedKeystrokesStack: [],
       chassisTheme: 0,
       activeDrill: null,
       drillStep: 0,
@@ -2415,6 +2559,8 @@
       }
       state.tableRows = rows;
       state.tableScroll = 0;
+      state.tableCursorRow = 0;
+      state.tableCursorCol = 0;
     }
 
     function handleTableAppKey(key, wasShift) {
@@ -2447,10 +2593,22 @@
         }
         return;
       }
+      const showG = state.setup.tableType === 'f(x)/g(x)';
+      const maxCol = showG ? 2 : 1;
       if (key === 'DOWN' || key === 'PGDN') {
-        state.tableScroll = Math.min(Math.max(0, state.tableRows.length - 3), state.tableScroll + 1);
+        if (state.tableCursorRow < state.tableRows.length - 1) {
+          state.tableCursorRow++;
+          if (state.tableCursorRow >= state.tableScroll + 4) state.tableScroll = state.tableCursorRow - 3;
+        }
       } else if (key === 'UP' || key === 'PGUP') {
-        state.tableScroll = Math.max(0, state.tableScroll - 1);
+        if (state.tableCursorRow > 0) {
+          state.tableCursorRow--;
+          if (state.tableCursorRow < state.tableScroll) state.tableScroll = state.tableCursorRow;
+        }
+      } else if (key === 'RIGHT') {
+        state.tableCursorCol = Math.min(maxCol, state.tableCursorCol + 1);
+      } else if (key === 'LEFT') {
+        state.tableCursorCol = Math.max(0, state.tableCursorCol - 1);
       }
     }
 
@@ -2572,6 +2730,7 @@
         viewport.innerHTML = renderActiveAppHTML();
       }
 
+      renderProjectorPanel();
       renderMemoryInspector();
       renderTapePanel();
       updateDrillHighlight();
@@ -2703,8 +2862,8 @@
         const inputHtml = renderSlotHTML(state.rootSlot, showCursor);
         const outputHtml = state.evaluated ? formatResultHTML(state.lastResultValue) : '';
         return `
-          <div id="lcd-input-line" class="text-[15px] leading-tight min-h-[44px] flex items-center overflow-x-auto whitespace-nowrap pr-2 math-font">${inputHtml}</div>
-          <div id="lcd-output-line" class="text-right text-[18px] font-bold leading-none min-h-[32px] flex items-end justify-end overflow-x-auto whitespace-nowrap math-font">${outputHtml}</div>
+          <div id="lcd-input-line" class="text-[18px] leading-tight min-h-[48px] flex items-center overflow-x-auto whitespace-nowrap pr-2 math-font">${inputHtml}</div>
+          <div id="lcd-output-line" class="text-right text-[23px] font-bold leading-none min-h-[36px] flex items-end justify-end overflow-x-auto whitespace-nowrap math-font">${outputHtml}</div>
         `;
       }
 
@@ -2782,23 +2941,36 @@
             </div>
           `;
         }
-        const slice = state.tableRows.slice(state.tableScroll, state.tableScroll + 3);
+        const slice = state.tableRows.slice(state.tableScroll, state.tableScroll + 4);
         const showG = state.setup.tableType === 'f(x)/g(x)';
+        const curRowObj = state.tableRows[state.tableCursorRow] || { x: 0, fx: 0, gx: 0 };
+        const selValRaw = state.tableCursorCol === 0 ? curRowObj.x : state.tableCursorCol === 1 ? curRowObj.fx : curRowObj.gx;
+        const selValDisp = Number.isFinite(selValRaw) ? Number(selValRaw.toPrecision(8)) : 'ERR';
         return `
-          <div class="text-[10px] leading-tight mono-font h-full flex flex-col justify-between">
-            <div class="grid ${showG ? 'grid-cols-4' : 'grid-cols-3'} font-bold border-b border-black/30">
-              <span>#</span><span>x</span><span>f(x)</span>${showG ? '<span>g(x)</span>' : ''}
-            </div>
+          <div class="text-[12px] leading-[1.18] lcd-table-grid h-full flex flex-col justify-between select-none">
             <div>
-              ${slice.map(r => `
-                <div class="grid ${showG ? 'grid-cols-4' : 'grid-cols-3'}">
-                  <span>${r.idx}</span><span>${r.x}</span>
-                  <span>${Number.isFinite(r.fx) ? Number(r.fx.toPrecision(5)) : 'ERR'}</span>
-                  ${showG ? `<span>${Number.isFinite(r.gx) ? Number(r.gx.toPrecision(5)) : 'ERR'}</span>` : ''}
-                </div>
-              `).join('')}
+              <div class="grid ${showG ? 'grid-cols-12' : 'grid-cols-9'} border-b border-black/40 text-center font-bold pb-0.5">
+                <span class="col-span-1"></span>
+                <span class="col-span-3 border-l border-r border-black/60 italic">x</span>
+                <span class="col-span-4 border-r border-black/60">f(<i class="font-serif">x</i>)</span>
+                ${showG ? '<span class="col-span-4 border-r border-black/60">g(<i class="font-serif">x</i>)</span>' : ''}
+              </div>
+              ${slice.map((r, idx) => {
+                const realRow = state.tableScroll + idx;
+                const isR = realRow === state.tableCursorRow;
+                const fxStr = Number.isFinite(r.fx) ? Number(r.fx.toPrecision(5)) : 'ERR';
+                const gxStr = Number.isFinite(r.gx) ? Number(r.gx.toPrecision(5)) : 'ERR';
+                return `
+                  <div class="grid ${showG ? 'grid-cols-12' : 'grid-cols-9'} items-center">
+                    <span class="col-span-1 text-right pr-1 text-[11px]">${r.idx}</span>
+                    <span class="col-span-3 border-l border-r border-black/60 text-right px-1 ${isR && state.tableCursorCol === 0 ? 'bg-[#121c15] text-[#d9e4d4]' : ''}">${r.x}</span>
+                    <span class="col-span-4 border-r border-black/60 text-right px-1 ${isR && state.tableCursorCol === 1 ? 'bg-[#121c15] text-[#d9e4d4]' : ''}">${fxStr}</span>
+                    ${showG ? `<span class="col-span-4 border-r border-black/60 text-right px-1 ${isR && state.tableCursorCol === 2 ? 'bg-[#121c15] text-[#d9e4d4]' : ''}">${gxStr}</span>` : ''}
+                  </div>
+                `;
+              }).join('')}
             </div>
-            <div class="text-[9px] opacity-75">[TOOLS] Range &amp; Define · [f(x)] Edit</div>
+            <div class="text-right text-[16px] font-bold leading-none pt-0.5 pr-1">${selValDisp}</div>
           </div>
         `;
       }
@@ -2909,10 +3081,75 @@
       DOT: '.', EXP: '×10ˣ', FORMAT: 'FORMAT', EXE: 'EXE'
     };
 
+    let audioCtx = null;
+    function playKeyBeep() {
+      if (!state.soundFx) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.045);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      } catch (e) {}
+    }
+
     function logKeystroke(key) {
+      playKeyBeep();
+      if (state.projectorPauseLog) return;
+      if ((key === 'AC' || key === 'ON') && state.acClearsLog) {
+        state.keystrokeLog = [];
+        return;
+      }
+      if (key === 'DEL' && state.delSyncsLog) {
+        if (state.keystrokeLog.length > 0) {
+          state.deletedKeystrokesStack.push(state.keystrokeLog.pop());
+        }
+        return;
+      }
       const label = KEY_DISPLAY_LABELS[key] || key;
       state.keystrokeLog.push({ key, label });
-      if (state.keystrokeLog.length > 80) state.keystrokeLog.shift();
+      if (state.keystrokeLog.length > 120) state.keystrokeLog.shift();
+    }
+
+    function renderProjectorPanel() {
+      const pShift = document.getElementById('proj-ind-shift');
+      if (!pShift) return;
+      pShift.style.opacity = state.shift ? '1' : '0.15';
+      document.getElementById('proj-ind-math').style.opacity = state.setup.ioMode.startsWith('MathI') ? '1' : '0.15';
+      document.getElementById('proj-ind-angle').textContent = state.setup.angleUnit;
+      document.getElementById('proj-ind-app').textContent = state.app;
+
+      const projViewport = document.getElementById('proj-viewport');
+      if (!state.powerOn) {
+        projViewport.innerHTML = `<div class="h-full flex items-center justify-center text-lg font-bold opacity-40">CW-83 EDU · OFF</div>`;
+      } else if (state.menuStack.length > 0) {
+        projViewport.innerHTML = `<div class="scale-125 origin-top-left p-2">${renderMenuStackHTML()}</div>`;
+      } else {
+        projViewport.innerHTML = `<div class="text-xl sm:text-2xl">${renderActiveAppHTML()}</div>`;
+      }
+
+      const pBox = document.getElementById('proj-keystroke-box');
+      if (state.keystrokeLog.length === 0) {
+        pBox.innerHTML = `<span class="text-slate-500 italic text-xs">按一下左側計算器按鍵開始同步示範...</span>`;
+      } else {
+        pBox.innerHTML = state.keystrokeLog.map(item => {
+          if (item.key === 'SEGMENT_BREAK') {
+            return `<div class="w-full border-b border-dashed border-slate-800 my-1"></div>`;
+          }
+          let colorCls = 'bg-slate-800 text-slate-100 border-slate-600';
+          if (item.key === 'SHIFT') colorCls = 'bg-amber-500/25 text-amber-300 border-amber-500/50';
+          else if (['HOME', 'CATALOG', 'TOOLS', 'FORMAT', 'FUNCTION', 'VARIABLE'].includes(item.key)) colorCls = 'bg-sky-500/25 text-sky-300 border-sky-500/50';
+          else if (item.key === 'EXE' || item.key === 'OK') colorCls = 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50';
+          return `<span class="px-2.5 py-1 rounded-lg border font-bold text-sm shadow-sm ${colorCls}">${item.label}</span>`;
+        }).join('');
+        pBox.scrollTop = pBox.scrollHeight;
+      }
     }
 
     function renderTapePanel() {
@@ -3012,6 +3249,7 @@
       state.evaluated = false;
       state.activeDrill = drill;
       state.drillStep = 0;
+      applyLanguageUI();
       renderDrillsPanel();
       renderAll();
     }
@@ -3136,6 +3374,7 @@
       if (demoIntervalId) { clearInterval(demoIntervalId); demoIntervalId = null; }
       state.activeDrill = null;
       state.drillStep = 0;
+      applyLanguageUI();
       renderDrillsPanel();
       renderAll();
     });
@@ -3159,12 +3398,109 @@
       document.getElementById('lbl-theme-name').textContent = names[state.chassisTheme];
     });
 
+    function applyLanguageUI() {
+      const isZH = state.lang === 'ZH';
+      document.getElementById('app-title').textContent = isZH ? 'CW-83 EDU智算平台' : 'CW-83 EDU Smart Calc Platform';
+      document.getElementById('lbl-projector-btn').textContent = isZH ? '投影佈局' : 'Projector Mode';
+      document.getElementById('lbl-fullscreen-btn').textContent = isZH ? '全屏計數機' : 'Full Screen Calc';
+      document.getElementById('lbl-training-btn').textContent = isZH ? 'CW 教學訓練' : 'Guided CW Drills';
+      document.getElementById('lbl-lang').textContent = isZH ? '🌐 繁中' : '🌐 EN';
+      document.getElementById('btn-exit-fullscreen').textContent = isZH ? '↙ 展開工具列' : '↙ Exit Full Screen';
+
+      const tabLabels = {
+        projector: isZH ? '🖥️ 投影示範' : '🖥️ Projector',
+        drills: isZH ? '🎯 CW 互動訓練' : '🎯 CW Drills',
+        tape: isZH ? '📜 按鍵與計算紀錄' : '📜 Keystrokes & Tape',
+        memory: isZH ? '💾 變數與函數 f(x)' : '💾 Variables & f(x)',
+        guide: isZH ? '📖 GT-X 與 CW 對照' : '📖 GT-X vs CW Map'
+      };
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const t = btn.getAttribute('data-tab');
+        if (tabLabels[t]) btn.textContent = tabLabels[t];
+      });
+
+      const pSeg = document.getElementById('btn-proj-segment');
+      if (pSeg) pSeg.textContent = isZH ? '分段' : 'New Line';
+      const pClr = document.getElementById('btn-proj-clear');
+      if (pClr) pClr.textContent = isZH ? '清除紀錄' : 'Clear';
+      const pPause = document.getElementById('btn-proj-pause');
+      if (pPause) {
+        pPause.textContent = state.projectorPauseLog
+          ? (isZH ? '▶ 繼續記錄' : '▶ Resume')
+          : (isZH ? '暫停記錄' : 'Pause');
+      }
+      const pDelLast = document.getElementById('btn-proj-del-last');
+      if (pDelLast) pDelLast.textContent = isZH ? '刪紀錄末鍵' : 'Delete Last Key';
+      const pUndoDel = document.getElementById('btn-proj-undo-del');
+      if (pUndoDel) pUndoDel.textContent = isZH ? '復原刪除' : 'Undo Delete';
+    }
+
     document.getElementById('btn-toggle-lang').addEventListener('click', () => {
-      state.lang = state.lang === 'BILINGUAL' ? 'EN' : 'BILINGUAL';
-      document.getElementById('app-title').textContent =
-        state.lang === 'BILINGUAL' ? 'CalcX CW · 在線科學計算器' : 'CalcX CW · Scientific Calculator Simulator';
-      document.getElementById('lbl-training-btn').textContent =
-        state.lang === 'BILINGUAL' ? 'CW 教學訓練 (CW Drills)' : 'Guided CW Drills';
+      state.lang = state.lang === 'ZH' ? 'EN' : 'ZH';
+      applyLanguageUI();
+      applyLanguageUI();
+      renderDrillsPanel();
+      renderAll();
+    });
+
+    function setMobileFullscreen(enable) {
+      state.fullscreenCalc = enable;
+      const bar = document.getElementById('fullscreen-floating-bar');
+      if (enable) {
+        document.body.classList.add('calc-fullscreen-mode');
+        bar.classList.remove('hidden');
+      } else {
+        document.body.classList.remove('calc-fullscreen-mode');
+        bar.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('btn-enter-fullscreen').addEventListener('click', () => setMobileFullscreen(true));
+    document.getElementById('btn-exit-fullscreen').addEventListener('click', () => setMobileFullscreen(false));
+    document.getElementById('btn-fs-theme').addEventListener('click', () => document.getElementById('btn-cycle-theme').click());
+
+    document.getElementById('btn-toggle-projector').addEventListener('click', () => {
+      const projTabBtn = document.querySelector('[data-tab="projector"]');
+      if (projTabBtn) projTabBtn.click();
+    });
+
+    document.getElementById('btn-proj-segment').addEventListener('click', () => {
+      state.keystrokeLog.push({ key: 'SEGMENT_BREAK', label: '↵' });
+      renderProjectorPanel();
+    });
+    document.getElementById('btn-proj-clear').addEventListener('click', () => {
+      state.keystrokeLog = [];
+      state.deletedKeystrokesStack = [];
+      renderProjectorPanel();
+      renderTapePanel();
+    });
+    document.getElementById('btn-proj-pause').addEventListener('click', (e) => {
+      state.projectorPauseLog = !state.projectorPauseLog;
+      e.currentTarget.textContent = state.projectorPauseLog ? '▶ 繼續記錄 (Resume)' : '暫停記錄 (Pause)';
+      e.currentTarget.classList.toggle('bg-amber-600', state.projectorPauseLog);
+    });
+    document.getElementById('btn-proj-del-last').addEventListener('click', () => {
+      if (state.keystrokeLog.length > 0) {
+        state.deletedKeystrokesStack.push(state.keystrokeLog.pop());
+        renderProjectorPanel();
+        renderTapePanel();
+      }
+    });
+    document.getElementById('btn-proj-undo-del').addEventListener('click', () => {
+      if (state.deletedKeystrokesStack.length > 0) {
+        state.keystrokeLog.push(state.deletedKeystrokesStack.pop());
+        renderProjectorPanel();
+        renderTapePanel();
+      }
+    });
+    document.getElementById('chk-ac-clear-log').addEventListener('change', (e) => {
+      state.acClearsLog = e.target.checked;
+    });
+    document.getElementById('chk-del-sync-log').addEventListener('change', (e) => {
+      state.delSyncsLog = e.target.checked;
+    });
+    document.getElementById('chk-sound-fx').addEventListener('change', (e) => {
+      state.soundFx = e.target.checked;
     });
 
     document.getElementById('btn-clear-keystrokes').addEventListener('click', () => {
@@ -3225,6 +3561,7 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
+      applyLanguageUI();
       renderDrillsPanel();
       renderAll();
     });
