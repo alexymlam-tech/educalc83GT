@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CW-83 EDU智算平台 (CW Edition) | fx-83GT CW Educational Simulator</title>
+  <title>CW-83 EDU智算平台 | fx-83GT CW Educational Simulator</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -236,8 +236,8 @@
   <header id="main-header" class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-bold text-white text-lg">
-          CW
+        <div class="px-2.5 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-extrabold text-white text-xs tracking-wider mono-font">
+          CW-83
         </div>
         <div>
           <div class="flex items-center gap-2">
@@ -321,7 +321,7 @@
         <div class="flex items-center justify-between mb-2.5 px-1.5">
           <div>
             <span class="font-extrabold tracking-wider text-sm text-slate-100 mono-font">CW-83</span>
-            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 mono-font ml-1">EDU 智算平台</span>
+            <span id="chassis-sub-badge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 mono-font ml-1">EDU 智算平台</span>
           </div>
           <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
             4-GRADATION HD DISPLAY
@@ -622,12 +622,12 @@
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <h2 class="text-sm sm:text-base font-bold text-white">同步顯示屏 (Synchronized Large Projector Display)</h2>
+              <h2 id="proj-screen-heading" class="text-sm sm:text-base font-bold text-white">同步顯示屏</h2>
             </div>
             <div class="flex items-center gap-3 text-xs text-slate-300">
               <label class="flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" id="chk-sound-fx" class="rounded bg-slate-800 border-slate-700 text-sky-500" />
-                <span>🔊 按鍵音效 (Beep)</span>
+                <span id="lbl-beep-fx">🔊 按鍵音效</span>
               </label>
             </div>
           </div>
@@ -649,14 +649,14 @@
               <div id="proj-output-line" class="text-right text-3xl sm:text-4xl font-extrabold leading-none min-h-[54px] flex items-end justify-end math-font"></div>
             </div>
           </div>
-          <p class="text-[11px] text-slate-400 mt-2">
+          <p id="proj-help-note" class="text-[11px] text-slate-400 mt-2">
             刪除／復原只整理下方按鍵紀錄；實際輸入請用計算器上的 DEL 修正。可暫停記錄，修正後再繼續。
           </p>
         </div>
 
         <div class="bg-slate-900/85 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <span class="text-sm font-bold text-white">按一下計算器開始示範 (Live Keystroke Stream)</span>
+            <span id="proj-demo-title" class="text-sm font-bold text-white">按一下計算器開始示範</span>
             <div class="flex items-center gap-3 text-xs">
               <button id="btn-proj-segment" type="button" class="text-sky-400 hover:text-sky-300 font-semibold">分段 (New Line)</button>
               <button id="btn-proj-clear" type="button" class="text-rose-400 hover:text-rose-300 font-semibold">清除紀錄 (Clear)</button>
@@ -678,11 +678,11 @@
             <div class="flex flex-wrap items-center gap-3 text-slate-300">
               <label class="flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" id="chk-ac-clear-log" class="rounded bg-slate-800 border-slate-700 text-sky-500" />
-                <span>AC / ON 清紀錄</span>
+                <span id="lbl-ac-clear">AC / ON 清紀錄</span>
               </label>
               <label class="flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" id="chk-del-sync-log" class="rounded bg-slate-800 border-slate-700 text-sky-500" />
-                <span>DEL 同步紀錄</span>
+                <span id="lbl-del-sync">DEL 同步紀錄</span>
               </label>
             </div>
           </div>
@@ -1447,6 +1447,9 @@
     function renderSlotHTML(slot, showCursor) {
       const isActiveSlot = showCursor && (slot === state.cursorSlot);
       if (slot.length === 0) {
+        if (slot === state.rootSlot) {
+          return isActiveSlot ? `<span class="m-cursor"></span>` : '';
+        }
         return isActiveSlot ? `<span class="m-box active-box"></span>` : `<span class="m-box"></span>`;
       }
       let html = '';
@@ -2860,7 +2863,7 @@
       if (state.app === 'Calculate') {
         const showCursor = !state.evaluated;
         const inputHtml = renderSlotHTML(state.rootSlot, showCursor);
-        const outputHtml = state.evaluated ? formatResultHTML(state.lastResultValue) : '';
+        const outputHtml = state.evaluated ? formatResultHTML(state.lastResultValue) : (state.rootSlot.length === 0 ? '0.' : '');
         return `
           <div id="lcd-input-line" class="text-[18px] leading-tight min-h-[48px] flex items-center overflow-x-auto whitespace-nowrap pr-2 math-font">${inputHtml}</div>
           <div id="lcd-output-line" class="text-right text-[23px] font-bold leading-none min-h-[36px] flex items-end justify-end overflow-x-auto whitespace-nowrap math-font">${outputHtml}</div>
@@ -3136,7 +3139,7 @@
 
       const pBox = document.getElementById('proj-keystroke-box');
       if (state.keystrokeLog.length === 0) {
-        pBox.innerHTML = `<span class="text-slate-500 italic text-xs">按一下左側計算器按鍵開始同步示範...</span>`;
+        pBox.innerHTML = `<span class="text-slate-500 italic text-xs">${state.lang === 'ZH' ? '按一下左側計算器按鍵開始同步示範...' : 'Click any calculator button on the left to start live demonstration...'}</span>`;
       } else {
         pBox.innerHTML = state.keystrokeLog.map(item => {
           if (item.key === 'SEGMENT_BREAK') {
@@ -3217,7 +3220,7 @@
           <div class="p-3.5 rounded-xl border ${isCurrent ? 'bg-sky-950/60 border-sky-400' : isDone ? 'bg-emerald-950/25 border-emerald-500/40' : 'bg-slate-950/70 border-slate-800'} flex flex-col justify-between gap-2">
             <div>
               <div class="flex items-center justify-between gap-2 mb-1">
-                <h3 class="text-xs font-bold text-white">${d.title}</h3>
+                <h3 class="text-xs font-bold text-white">${state.lang === 'EN' ? d.title.replace(/\s*\([^()]*[\u4e00-\u9fa5][^()]*\)/g, '') : d.title}</h3>
                 ${isDone ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">✓ Mastered</span>' : ''}
               </div>
               <p class="text-[11px] text-slate-300 mb-2">${d.desc}</p>
@@ -3404,7 +3407,23 @@
       document.getElementById('lbl-projector-btn').textContent = isZH ? '投影佈局' : 'Projector Mode';
       document.getElementById('lbl-fullscreen-btn').textContent = isZH ? '全屏計數機' : 'Full Screen Calc';
       document.getElementById('lbl-training-btn').textContent = isZH ? 'CW 教學訓練' : 'Guided CW Drills';
-      document.getElementById('lbl-lang').textContent = isZH ? '🌐 繁中' : '🌐 EN';
+      document.getElementById('lbl-lang').textContent = isZH ? '繁中' : 'EN';
+      const cBadge = document.getElementById('chassis-sub-badge');
+      if (cBadge) cBadge.textContent = isZH ? 'EDU 智算平台' : 'EDU SMART CALC';
+      const pScreenHead = document.getElementById('proj-screen-heading');
+      if (pScreenHead) pScreenHead.textContent = isZH ? '同步顯示屏' : 'Synchronized Large Projector Display';
+      const lblBeep = document.getElementById('lbl-beep-fx');
+      if (lblBeep) lblBeep.textContent = isZH ? '🔊 按鍵音效' : '🔊 Key Beep';
+      const pNote = document.getElementById('proj-help-note');
+      if (pNote) pNote.textContent = isZH
+        ? '刪除／復原只整理下方按鍵紀錄；實際輸入請用計算器上的 DEL 修正。可暫停記錄，修正後再繼續。'
+        : 'Delete/Undo only edits the keystroke log below; use DEL on the keypad to edit the actual expression. You can pause logging anytime.';
+      const pDemoTitle = document.getElementById('proj-demo-title');
+      if (pDemoTitle) pDemoTitle.textContent = isZH ? '按一下計算器開始示範' : 'Click Calculator Keys to Start Live Demo';
+      const lblAc = document.getElementById('lbl-ac-clear');
+      if (lblAc) lblAc.textContent = isZH ? 'AC / ON 清紀錄' : 'AC / ON Clears Log';
+      const lblDel = document.getElementById('lbl-del-sync');
+      if (lblDel) lblDel.textContent = isZH ? 'DEL 同步紀錄' : 'DEL Syncs Log';
       document.getElementById('btn-exit-fullscreen').textContent = isZH ? '↙ 展開工具列' : '↙ Exit Full Screen';
 
       const tabLabels = {
