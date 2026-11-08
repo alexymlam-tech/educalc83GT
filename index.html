@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CW-83 EDU智算平台 | fx-83GT CW Educational Simulator</title>
+  <title>CW-83 EDU Smart Calc Platform | fx-83GT CW Educational Simulator</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,6 +47,46 @@
         0 25px 50px -12px rgba(15, 23, 42, 0.35),
         inset 0 2px 3px rgba(255, 255, 255, 0.9),
         inset 0 -4px 8px rgba(15, 23, 42, 0.18);
+    }
+    /* Pastel Blush Pink Theme matching image_a80975.png */
+    .cw-chassis.theme-pink {
+      background: linear-gradient(165deg, #ebd0d5 0%, #dfc0c6 65%, #cfaab2 100%);
+      border-color: #d6afb7;
+      box-shadow:
+        0 28px 55px -12px rgba(80, 30, 45, 0.45),
+        inset 0 2px 3px rgba(255, 255, 255, 0.78),
+        inset 0 -5px 10px rgba(100, 50, 65, 0.25);
+    }
+    .cw-chassis.theme-pink .lcd-bezel {
+      background: linear-gradient(180deg, #c9a7af 0%, #d8b8c0 100%);
+      box-shadow: inset 0 2px 5px rgba(80, 40, 50, 0.35), 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .cw-chassis.theme-pink .font-extrabold.text-slate-100,
+    .cw-chassis.theme-pink .text-slate-400 {
+      color: #4a333b !important;
+    }
+    .cw-chassis.theme-pink .sub-label-row span { color: #573b44; }
+    .cw-chassis.theme-pink .lbl-shift { color: #6d28d9 !important; }
+    .cw-chassis.theme-pink .lbl-var { color: #0369a1 !important; }
+    .cw-chassis.theme-pink .key-nav-pill {
+      background: linear-gradient(180deg, #e2c2c8 0%, #cfaab2 100%);
+      color: #2d1920;
+      border-color: rgba(120, 70, 85, 0.3);
+      box-shadow: 0 2.5px 0 #9f7881, inset 0 1px 1px rgba(255,255,255,0.75);
+    }
+    .cw-chassis.theme-pink .key-nav-pill[data-key="SHIFT"] {
+      background: linear-gradient(180deg, #9f7aea 0%, #805ad5 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 2.5px 0 #553c9a, inset 0 1px 1px rgba(255,255,255,0.45);
+    }
+    .cw-chassis.theme-pink .key-fn-cw,
+    .cw-chassis.theme-pink .key-num-cw,
+    .cw-chassis.theme-pink .key-del-ac,
+    .cw-chassis.theme-pink .key-exe-cw {
+      background: linear-gradient(180deg, #faf7f8 0%, #efe6e8 100%);
+      color: #26171c !important;
+      border-color: rgba(140, 95, 108, 0.25);
+      box-shadow: 0 3px 0 #b08d95, 0 4px 6px rgba(80, 40, 50, 0.18), inset 0 1px 0 #ffffff;
     }
     .cw-chassis.theme-blue {
       background: linear-gradient(165deg, #1e3a8a 0%, #172554 65%, #0f172a 100%);
@@ -241,7 +281,7 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-bold text-base sm:text-lg tracking-tight text-white" id="app-title">CW-83 EDU智算平台</h1>
+            <h1 class="font-bold text-base sm:text-lg tracking-tight text-white" id="app-title">CW-83 EDU Smart Calc Platform</h1>
             <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
               100% fx-83GT CW Workflow Edition
             </span>
@@ -264,17 +304,17 @@
 
         <button id="btn-toggle-projector" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition flex items-center gap-1.5">
           <span>🖥️</span>
-          <span id="lbl-projector-btn">投影佈局</span>
+          <span id="lbl-projector-btn">Projector Mode</span>
         </button>
 
         <button id="btn-enter-fullscreen" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 transition flex items-center gap-1.5" title="Hide header and fill screen with calculator">
           <span>📱</span>
-          <span id="lbl-fullscreen-btn">全屏計數機</span>
+          <span id="lbl-fullscreen-btn">Full Screen Calc</span>
         </button>
 
         <button id="btn-toggle-training" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center gap-1.5">
           <span>🎯</span>
-          <span id="lbl-training-btn">CW 教學訓練</span>
+          <span id="lbl-training-btn">Guided CW Drills</span>
         </button>
 
         <button id="btn-cycle-theme" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">
@@ -282,7 +322,7 @@
         </button>
 
         <button id="btn-toggle-lang" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-sky-300 border border-slate-700 hover:bg-slate-700 transition">
-          🌐 <span id="lbl-lang">EN / 繁中</span>
+          🌐 <span id="lbl-lang">EN</span>
         </button>
       </div>
     </div>
@@ -292,7 +332,7 @@
   <!-- Floating Mini Toolbar when in Mobile Full-Screen Calculator Mode -->
   <div id="fullscreen-floating-bar" class="hidden fixed top-2 right-2 z-50 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur border border-slate-700 px-2.5 py-1 rounded-full shadow-xl">
     <button id="btn-fs-theme" type="button" class="text-xs px-1.5 py-0.5 rounded text-slate-200 hover:bg-slate-800" title="Switch Theme">🎨</button>
-    <button id="btn-exit-fullscreen" type="button" class="text-xs font-bold px-2 py-0.5 rounded-full bg-sky-500 text-white hover:bg-sky-400">↙ 展開工具列</button>
+    <button id="btn-exit-fullscreen" type="button" class="text-xs font-bold px-2 py-0.5 rounded-full bg-sky-500 text-white hover:bg-sky-400">↙ Exit Full Screen</button>
   </div>
   <main id="main-workspace" class="max-w-7xl mx-auto px-3 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
@@ -321,7 +361,7 @@
         <div class="flex items-center justify-between mb-2.5 px-1.5">
           <div>
             <span class="font-extrabold tracking-wider text-sm text-slate-100 mono-font">CW-83</span>
-            <span id="chassis-sub-badge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 mono-font ml-1">EDU 智算平台</span>
+            <span id="chassis-sub-badge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 mono-font ml-1">EDU SMART CALC</span>
           </div>
           <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
             4-GRADATION HD DISPLAY
@@ -600,7 +640,7 @@
       <!-- Tab Bar -->
       <div class="flex flex-wrap gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
         <button type="button" data-tab="projector" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-emerald-300 hover:bg-slate-800 transition">
-          🖥️ 投影示範 (Projector)
+          🖥️ Projector
         </button>
         <button type="button" data-tab="drills" class="tab-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-sky-500 text-white shadow transition">
           🎯 CW Interactive Drills
@@ -1105,7 +1145,7 @@
       circleAngle1: 45,
       circleAngle2: 135,
 
-      lang: 'ZH',
+      lang: 'EN',
       fullscreenCalc: false,
       projectorPauseLog: false,
       acClearsLog: false,
@@ -3392,12 +3432,13 @@
     });
 
     document.getElementById('btn-cycle-theme').addEventListener('click', () => {
-      state.chassisTheme = (state.chassisTheme + 1) % 3;
+      state.chassisTheme = (state.chassisTheme + 1) % 4;
       const chassis = document.getElementById('cw-chassis');
-      chassis.classList.remove('theme-light', 'theme-blue');
-      const names = ['Matte Black', 'Arctic White', 'Cobalt Blue'];
+      chassis.classList.remove('theme-light', 'theme-blue', 'theme-pink');
+      const names = ['Matte Black', 'Arctic White', 'Cobalt Blue', 'Blush Pink'];
       if (state.chassisTheme === 1) chassis.classList.add('theme-light');
       if (state.chassisTheme === 2) chassis.classList.add('theme-blue');
+      if (state.chassisTheme === 3) chassis.classList.add('theme-pink');
       document.getElementById('lbl-theme-name').textContent = names[state.chassisTheme];
     });
 
@@ -3407,7 +3448,7 @@
       document.getElementById('lbl-projector-btn').textContent = isZH ? '投影佈局' : 'Projector Mode';
       document.getElementById('lbl-fullscreen-btn').textContent = isZH ? '全屏計數機' : 'Full Screen Calc';
       document.getElementById('lbl-training-btn').textContent = isZH ? 'CW 教學訓練' : 'Guided CW Drills';
-      document.getElementById('lbl-lang').textContent = isZH ? '繁中' : 'EN';
+      document.getElementById('lbl-lang').textContent = isZH ? 'EN' : '繁中';
       const cBadge = document.getElementById('chassis-sub-badge');
       if (cBadge) cBadge.textContent = isZH ? 'EDU 智算平台' : 'EDU SMART CALC';
       const pScreenHead = document.getElementById('proj-screen-heading');
